@@ -1,111 +1,114 @@
 # Jobs
 
-Jobs 是 **Out of loop** 的定时任务系统，让 AI 能够在 Agent Loop 之外持续、自动地执行任务。
+Jobs is an **Out of loop** scheduled task system that enables AI to execute tasks continuously and automatically outside the Agent Loop.
 
-## 核心概念
+[中文版本](./README.zh.md)
+
+## Core Concepts
 
 ### In loop vs Out of loop
 
-| 类型 | 触发方式 | 生命周期 | 自动化程度 |
-|------|----------|----------|------------|
-| **Skills** | Agent 决策 / 人工 `/slash` | 受限于当前 Agent Loop | 半自动化 |
-| **Jobs** | Cron 定时 + 条件判断 | 系统级，Out of loop | **全自动化** |
+| Type | Trigger | Lifecycle | Automation |
+|------|---------|-----------|------------|
+| **Skills** | Agent decision / Manual `/slash` | Bound to current Agent Loop | Semi-automated |
+| **Jobs** | Cron schedule + Condition check | System-level, Out of loop | **Fully automated** |
 
-### Jobs 解决的问题
+### Problems Jobs Solve
 
-- 想在睡眠时让 AI 继续消耗 token 帮你干活？
-- 想让 AI 定时检查某些事情并自动执行？
-- 想实现真正的自动化、自主进化？
+- Want AI to keep consuming tokens and working for you while you sleep?
+- Want AI to periodically check things and execute automatically?
+- Want to achieve true automation and autonomous evolution?
 
-**Jobs = Cron 定时任务 + 条件执行 + Skills 组合**
+**Jobs = Cron Scheduled Tasks + Conditional Execution + Skills Composition**
 
-## 仓库结构
+## Repository Structure
 
 ```
 jobs/
-├── README.md                 # 本文档
+├── README.md                 # This document
+├── README.zh.md              # Chinese version
 ├── spec/
-│   └── jobs-spec.md          # Jobs 规范定义
+│   └── jobs-spec.md          # Jobs specification
 ├── template/
-│   └── JOB.md                # Job 模板
-├── jobs/                     # 示例 Jobs
+│   └── JOB.md                # Job template
+├── jobs/                     # Example Jobs
 │   ├── npm-global-update/
 │   ├── claude-news-collect/
 │   └── todo-night-executor/
 └── .claude-plugin/
-    └── marketplace.json      # Claude Code 插件配置
+    └── marketplace.json      # Claude Code plugin configuration
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 创建一个 Job
+### 1. Create a Job
 
-在 `jobs/` 目录下创建文件夹，包含 `JOB.md` 文件：
+Create a folder under `jobs/` containing a `JOB.md` file:
 
 ```markdown
 ---
 name: my-first-job
 cron: 0 9 * * *
-description: 每天上午 9 点执行的示例任务
+description: Example job that runs daily at 9 AM
 ---
 
-# 我的第一个 Job
+# My First Job
 
-在这里编写任务执行时的指令。
+Write your instructions here that Claude will follow when this job triggers.
 ```
 
-### 2. 核心字段
+### 2. Core Fields
 
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| `name` | 是 | Job 唯一标识（小写，连字符分隔） |
-| `description` | 是 | Job 描述，说明何时使用 |
-| `cron` | 是 | Cron 表达式，定义调度频率 |
-| `condition` | 否 | 执行条件（脚本路径或条件描述） |
-| `allowedSkills` | 否 | 允许使用的 Skills 列表 |
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Unique identifier for the job (lowercase, hyphen-separated) |
+| `description` | Yes | Description of what the job does and when to use it |
+| `cron` | Yes | Cron expression defining the schedule |
+| `condition` | No | Execution condition (script path or natural language) |
+| `allowedSkills` | No | List of Skills allowed for this job |
 
-### 3. Cron 表达式
+### 3. Cron Expression
 
 ```
-┌───────────── 分钟 (0-59)
-│ ┌───────────── 小时 (0-23)
-│ │ ┌───────────── 日期 (1-31)
-│ │ │ ┌───────────── 月份 (1-12)
-│ │ │ │ ┌───────────── 星期 (0-6，周日为0)
+┌───────────── Minute (0-59)
+│ ┌───────────── Hour (0-23)
+│ │ ┌───────────── Day of month (1-31)
+│ │ │ ┌───────────── Month (1-12)
+│ │ │ │ ┌───────────── Day of week (0-6, Sunday is 0)
 │ │ │ │ │
 * * * * *
 ```
 
-常用示例：
-- `0 9 * * *` - 每天上午 9 点
-- `0 9 * * 1` - 每周一上午 9 点
-- `0 0 * * *` - 每天凌晨 0 点
-- `*/30 * * * *` - 每 30 分钟
+Common examples:
+- `0 9 * * *` - Every day at 9 AM
+- `0 9 * * 1` - Every Monday at 9 AM
+- `0 0 * * *` - Every day at midnight
+- `*/30 * * * *` - Every 30 minutes
 
-## 执行流程
+## Execution Flow
 
 ```
 ┌──────────────┐
-│   开始       │
+│    Start     │
 └──────┬───────┘
        ▼
 ┌──────────────┐
-│ 检查 Cron    │◄──────────────────┐
-│ 是否到期?    │                   │
+│ Check Cron   │◄──────────────────┐
+│  Is due?     │                   │
 └──────┬───────┘                   │
        │                           │
    ┌───┴───┐                       │
-   │ 否    │ 是                    │
+   │  No   │ Yes                   │
    ▼       ▼                       │
 ┌──────┐ ┌──────────────┐         │
-│等待  │ │检查 Condition │         │
+│Wait  │ │Check Condition│         │
 └──┬───┘ └──────┬───────┘         │
    │            │                  │
    │        ┌───┴───┐              │
-   │        │ 否    │ 是           │
+   │        │  No   │ Yes           │
    │        ▼       ▼              │
    │   ┌──────┐ ┌──────────────┐  │
-   │   │等待  │ │ 执行 Job     │  │
+   │   │Wait  │ │ Execute Job  │  │
    │   └──┬───┘ └──────┬───────┘  │
    │      │            │           │
    │      └────────────┼───────────┘
@@ -113,36 +116,36 @@ description: 每天上午 9 点执行的示例任务
    └───────────────────┘
 ```
 
-## 与 Skills 的关系
+## Relationship with Skills
 
 ```
 ┌─────────────────────────────────────────┐
 │                  Jobs                    │
 │  ┌─────────────────────────────────┐    │
-│  │  Cron 调度 + Condition 判断     │    │
-│  │  (Out of loop)                  │    │
+│  │  Cron Scheduling + Condition    │    │
+│  │  Checking (Out of loop)         │    │
 │  └──────────────┬──────────────────┘    │
 │                 │                        │
 │                 ▼                        │
 │  ┌─────────────────────────────────┐    │
-│  │         Skills 组合              │    │
+│  │         Skills Composition      │    │
 │  │  (In loop / Agent loop)         │    │
 │  └─────────────────────────────────┘    │
 └─────────────────────────────────────────┘
 ```
 
-- **Jobs** 负责定时触发和条件判断（Out of loop）
-- **Skills** 负责具体的任务执行（In loop）
-- 一个 Job 可以组合多个 Skills 完成复杂任务
+- **Jobs** handle scheduling and condition checking (Out of loop)
+- **Skills** handle actual task execution (In loop)
+- One Job can compose multiple Skills to complete complex tasks
 
-## 更多信息
+## More Information
 
-- [规范文档](./spec/jobs-spec.md) - 完整的 Jobs 规范定义
-- [模板](./template/JOB.md) - 创建新 Job 的模板
-- [示例 Jobs](./jobs/) - 查看更多示例
+- [Specification](./spec/jobs-spec.md) - Complete Jobs specification
+- [Template](./template/JOB.md) - Template for creating new Jobs
+- [Example Jobs](./jobs/) - View more examples
 
-## 启发
+## Inspiration
 
-本项目受到文章 [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills) 的启发。
+This project is inspired by the article [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills).
 
-核心观点：**定时任务是实现自动化、自主进化的一个重要方式。**
+Core insight: **Scheduled tasks are an important way to achieve automation and autonomous evolution.**
