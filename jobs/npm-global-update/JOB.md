@@ -1,42 +1,42 @@
 ---
 name: npm-global-update
 cron: 0 9 * * 1
-description: 每周一上午 9 点更新 npm 全局依赖
+description: Update npm global dependencies every Monday at 9 AM
 tags: [maintenance, npm]
 timeout: 30
 ---
 
-# npm 全局依赖更新
+# npm Global Dependencies Update
 
-## 目标
+## Objective
 
-每周一自动更新系统中安装的 npm 全局依赖包，保持开发环境最新。
+Automatically update installed npm global packages every Monday to keep the development environment up to date.
 
-## 执行步骤
+## Execution Steps
 
-1. 检查当前系统的 npm 全局安装列表
+1. Check current npm global installation list
    ```bash
    npm list -g --depth=0
    ```
 
-2. 执行全局更新
+2. Execute global update
    ```bash
    npm update -g
    ```
 
-3. 验证更新结果
-   - 再次运行 `npm list -g --depth=0` 对比
-   - 检查是否有报错
+3. Verify update results
+   - Run `npm list -g --depth=0` again for comparison
+   - Check for any errors
 
-## 输出要求
+## Output Requirements
 
-记录以下信息：
-- 更新前的版本列表
-- 更新后的版本列表
-- 任何警告或错误信息
+Record the following information:
+- Version list before update
+- Version list after update
+- Any warnings or error messages
 
-## 注意事项
+## Notes
 
-- 如果某些包需要特定版本保持不变，请先检查并跳过
-- 更新失败时记录具体错误，不要影响后续执行
-- 如果有重大版本变化（major version bump），额外标记并记录
+- If certain packages need to stay at specific versions, check and skip them first
+- Record specific errors when update fails, don't affect subsequent execution
+- If there are major version bumps, mark and record them separately

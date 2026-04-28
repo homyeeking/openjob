@@ -1,72 +1,72 @@
 ---
 name: claude-news-collect
 cron: 0 10 * * *
-description: 每天收集 Claude 的更新信息，有更新则总结并写入博客
-condition: 检查 Claude 官方是否有新的更新发布
+description: Collect Claude updates daily, summarize and publish to blog if there are updates
+condition: Check if there are new updates from Claude official channels
 allowedSkills: [write-to-blog]
 tags: [monitoring, claude, blog]
 timeout: 60
 ---
 
-# Claude 更新收集
+# Claude Update Collector
 
-## 目标
+## Objective
 
-每天检查 Claude 相关的官方更新，如果有新内容则进行总结并发布到个人博客。
+Check Claude-related official updates daily. If there is new content, summarize and publish to personal blog.
 
-## 执行步骤
+## Execution Steps
 
-### 阶段 1: 信息收集
+### Phase 1: Information Collection
 
-检查以下来源是否有新内容：
+Check the following sources for new content:
 
-1. **Anthropic 官方博客**
+1. **Anthropic Official Blog**
    - https://www.anthropic.com/news
-   - 查找最近 24 小时内的新文章
+   - Look for new articles within the last 24 hours
 
-2. **Claude 文档更新**
+2. **Claude Documentation Updates**
    - https://docs.anthropic.com
-   - 检查变更日志、发布说明
+   - Check changelogs, release notes
 
-3. **GitHub 发布**
-   - 相关 SDK 和工具的更新
+3. **GitHub Releases**
+   - Updates to related SDKs and tools
 
-### 阶段 2: 内容总结
+### Phase 2: Content Summary
 
-如果发现新内容：
+If new content is found:
 
-1. 阅读并理解更新内容
-2. 提取关键点：
-   - 新功能
-   - 重要改进
-   - 破坏性变更
-   - 新的 API 或参数
+1. Read and understand the updates
+2. Extract key points:
+   - New features
+   - Important improvements
+   - Breaking changes
+   - New APIs or parameters
 
-3. 撰写一篇结构化的总结文章，包含：
-   - 更新概述
-   - 核心变化详解
-   - 实际应用场景
-   - 迁移建议（如有破坏性变更）
+3. Write a structured summary article including:
+   - Update overview
+   - Detailed explanation of core changes
+   - Practical application scenarios
+   - Migration recommendations (if there are breaking changes)
 
-### 阶段 3: 发布
+### Phase 3: Publish
 
-使用 `write-to-blog` skill 将总结文章发布到个人博客。
+Use `write-to-blog` skill to publish the summary article to personal blog.
 
-## 输出要求
+## Output Requirements
 
-- 如果有更新：发布一篇博客文章
-- 如果无更新：记录"今日无更新"并结束
-- 所有执行情况都要记录日志
+- If updates exist: publish a blog article
+- If no updates: record "No updates today" and exit
+- All execution situations should be logged
 
-## 注意事项
+## Notes
 
-- 只处理真正的"新"内容，避免重复发布
-- 总结要准确传达官方信息，不要添加臆测
-- 如果更新涉及安全问题，要特别强调
-- 包含指向官方来源的链接
+- Only process truly "new" content, avoid duplicate publishing
+- Summaries should accurately convey official information, don't add speculation
+- If updates involve security issues, emphasize them specifically
+- Include links to official sources
 
-## 判定条件示例
+## Condition Examples
 
-- 官方博客有新文章发布 → 触发
-- 文档有重要更新 → 触发
-- 只有小的错别字修复 → 可跳过
+- Official blog has new article → trigger
+- Documentation has important updates → trigger
+- Only minor typo fixes → may skip

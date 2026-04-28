@@ -1,128 +1,128 @@
 ---
 name: todo-night-executor
 cron: 0 0 * * *
-description: 每天凌晨 0 点自动执行项目 TODO 列表中的待办任务
-condition: 检查当前目录是否有未完成的 TODO 事项
+description: Automatically execute TODO tasks from project TODO list every midnight
+condition: Check if there are unfinished TODO items in current directory
 tags: [automation, development, todo]
 timeout: 360
 retry: 1
 ---
 
-# 夜间 TODO 执行器
+# Nightly TODO Executor
 
-## 目标
+## Objective
 
-在用户睡眠期间，自动发现并执行项目中的 TODO 事项，实现"睡前记录 TODO，醒来看见结果"的自动化开发体验。
+Automatically discover and execute TODO items in the project during user's sleep time, enabling an automated development experience: "Record TODO before sleep, see results when waking up".
 
-## 执行步骤
+## Execution Steps
 
-### 阶段 1: 发现 TODO
+### Phase 1: Discover TODOs
 
-1. 扫描当前工作目录，识别以下形式的 TODO：
-   - `TODO.md` 文件
-   - `README.md` 中的 TODO 章节
-   - 代码注释中的 `// TODO:` 或 `/* TODO */`
-   - 项目管理文件（如 `tasks.md`, `backlog.md` 等）
+1. Scan current working directory for TODOs in these forms:
+   - `TODO.md` file
+   - TODO section in `README.md`
+   - Code comments like `// TODO:` or `/* TODO */`
+   - Project management files (e.g., `tasks.md`, `backlog.md`, etc.)
 
-2. 解析并提取待办事项，包括：
-   - 任务描述
-   - 优先级标记（如 `[P0]`, `[高]`, `!` 等）
-   - 预计复杂度
-   - 依赖关系
+2. Parse and extract TODO items including:
+   - Task description
+   - Priority markers (e.g., `[P0]`, `[high]`, `!`, etc.)
+   - Estimated complexity
+   - Dependencies
 
-### 阶段 2: 任务评估
+### Phase 2: Task Evaluation
 
-对每个提取的 TODO 进行评估：
+Evaluate each extracted TODO:
 
-| 类型 | 建议动作 |
-|------|----------|
-| 简单 bug 修复 | 自动执行 |
-| 文档编写 | 自动执行 |
-| 代码重构 | 评估复杂度后决定 |
-| 新功能开发 | 需要明确需求时记录疑问 |
-| 需要决策的问题 | 记录下来，等待用户确认 |
+| Type | Suggested Action |
+|------|------------------|
+| Simple bug fix | Execute automatically |
+| Documentation writing | Execute automatically |
+| Code refactoring | Decide after evaluating complexity |
+| New feature development | Record questions when requirements need clarification |
+| Decision-required questions | Record and wait for user confirmation |
 
-### 阶段 3: 任务执行
+### Phase 3: Task Execution
 
-按照优先级顺序执行任务：
+Execute tasks in priority order:
 
-1. **高优先级 (P0) 任务**：优先执行
-2. **中优先级 (P1) 任务**：时间允许时执行
-3. **低优先级 (P2) 任务**：仅当高/中优先级完成后执行
+1. **High priority (P0) tasks**: Execute first
+2. **Medium priority (P1) tasks**: Execute if time permits
+3. **Low priority (P2) tasks**: Execute only after high/medium priority tasks complete
 
-执行要求：
-- 每个任务开始前记录当前状态
-- 执行过程中保留详细日志
-- 完成后记录结果和变更
-- 遇到不确定的地方，记录疑问并跳过
+Execution requirements:
+- Record current state before each task starts
+- Keep detailed logs during execution
+- Record results and changes after completion
+- When encountering uncertainties, record questions and skip
 
-### 阶段 4: 结果汇总
+### Phase 4: Result Summary
 
-执行完成后，生成一份执行报告：
+After execution completes, generate an execution report:
 
 ```markdown
-## 夜间执行报告 - YYYY-MM-DD
+## Nightly Execution Report - YYYY-MM-DD
 
-### 已完成任务
-- [x] 任务 1 - 完成时间/变更摘要
-- [x] 任务 2 - 完成时间/变更摘要
+### Completed Tasks
+- [x] Task 1 - Completion time/change summary
+- [x] Task 2 - Completion time/change summary
 
-### 部分完成/遇到问题
-- [ ] 任务 3 - 遇到的具体问题/需要用户决策的点
+### Partially Complete / Issues Encountered
+- [ ] Task 3 - Specific problems encountered / points needing user decision
 
-### 跳过的任务
-- 任务 4 - 跳过原因（如：需求不明确）
+### Skipped Tasks
+- Task 4 - Reason for skipping (e.g., unclear requirements)
 
-### 建议
-- 任务 5 - 需要用户补充信息后再执行
+### Suggestions
+- Task 5 - Needs user to provide additional information before execution
 ```
 
-## 执行原则
+## Execution Principles
 
-### 安全优先
+### Safety First
 
-1. **有疑问即停止**：遇到不确定的情况，不要猜测，记录下来等待用户确认
-2. **破坏性操作需谨慎**：涉及删除、大规模重构等操作，标记为需要用户确认
-3. **保留回滚能力**：所有变更都要有 git 提交，方便回滚
+1. **Stop when in doubt**: When encountering uncertain situations, don't guess, record and wait for user confirmation
+2. **Caution with destructive operations**: Operations involving deletion, large-scale refactoring, etc., mark as requiring user confirmation
+3. **Preserve rollback capability**: All changes should have git commits for easy rollback
 
-### 质量保证
+### Quality Assurance
 
-1. 完成的代码要符合项目既有风格
-2. 有测试的项目要确保测试通过
-3. 文档变更要清晰、准确
+1. Completed code should follow existing project style
+2. Projects with tests should ensure tests pass
+3. Documentation changes should be clear and accurate
 
-### 时间管理
+### Time Management
 
-1. 总执行时间不超过 `timeout` 设置
-2. 单个任务执行时间过长时考虑切分
-3. 优先保证高优先级任务完成
+1. Total execution time should not exceed `timeout` setting
+2. Consider splitting individual tasks that take too long
+3. Prioritize completing high-priority tasks
 
-## 标记约定
+## Marker Convention
 
-在处理 TODO 时使用以下标记：
+Use these markers when processing TODOs:
 
-| 标记 | 含义 |
-|------|------|
-| `// TODO:` | 待执行 |
-| `// IN-PROGRESS:` | 执行中 |
-| `// DONE:` | 已完成（可以删除注释） |
-| `// BLOCKED:` | 阻塞，需要用户介入 |
+| Marker | Meaning |
+|--------|---------|
+| `// TODO:` | Pending execution |
+| `// IN-PROGRESS:` | In execution |
+| `// DONE:` | Completed (can delete comment) |
+| `// BLOCKED:` | Blocked, needs user intervention |
 
-## 示例场景
+## Example Scenario
 
-**用户操作**（白天）：
+**User Action** (during day):
 ```markdown
 ## TODO
-- [ ] 修复用户登录接口的 bug（日志显示空指针）
-- [ ] 为新增的 API 编写文档
-- [ ] 考虑是否重构认证模块
+- [ ] Fix user login API bug (logs show null pointer)
+- [ ] Write documentation for new API
+- [ ] Consider whether to refactor auth module
 ```
 
-**AI 执行**（夜间）：
-1. 修复登录接口 bug → 完成，提交代码
-2. 编写 API 文档 → 完成，更新文档
-3. 重构认证模块 → 标记为需要用户确认，记录分析结果
+**AI Execution** (at night):
+1. Fix login API bug → completed, code committed
+2. Write API documentation → completed, docs updated
+3. Refactor auth module → marked as needing user confirmation, analysis results recorded
 
-**用户醒来**：
-- 看到已修复的 bug 和新增的文档
-- 看到关于重构的分析和建议，可以直接决策
+**User Wakes Up**:
+- Sees fixed bug and new documentation
+- Sees analysis and suggestions about refactoring, can make decision directly
