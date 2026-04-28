@@ -1,0 +1,40 @@
+{
+  "name": "homyee-jobs",
+  "owner": {
+    "name": "HomyeeKing",
+    "email": "HomyeeKing@gmail.com"
+  },
+  "metadata": {
+    "description": "Out of loop 定时任务系统 - 让 AI 在 Agent Loop 之外持续执行",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "maintenance-jobs",
+      "description": "系统维护类 Jobs - 定期更新、清理、监控等",
+      "source": "./",
+      "strict": false,
+      "jobs": [
+        "./jobs/npm-global-update"
+      ]
+    },
+    {
+      "name": "monitoring-jobs",
+      "description": "监控收集类 Jobs - 追踪更新、收集信息等",
+      "source": "./",
+      "strict": false,
+      "jobs": [
+        "./jobs/claude-news-collect"
+      ]
+    },
+    {
+      "name": "automation-jobs",
+      "description": "自动化开发类 Jobs - 夜间执行 TODO、代码处理等",
+      "source": "./",
+      "strict": false,
+      "jobs": [
+        "./jobs/todo-night-executor"
+      ]
+    }
+  ]
+}
