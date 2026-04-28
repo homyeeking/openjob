@@ -144,8 +144,8 @@ Common examples:
 - [Template](./template/JOB.md) - Template for creating new Jobs
 - [Example Jobs](./jobs/) - View more examples
 
-## Inspiration
+## Origin
 
-This project is inspired by the article [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills).
+This project is based on the article [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills) by the same author.
 
 Core insight: **Scheduled tasks are an important way to achieve automation and autonomous evolution.**

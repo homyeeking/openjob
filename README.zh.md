@@ -141,8 +141,8 @@ description: 每天上午 9 点执行的示例任务
 - [模板](./template/JOB.md) - 创建新 Job 的模板
 - [示例 Jobs](./jobs/) - 查看更多示例
 
-## 启发
+## 来源
 
-本项目受到文章 [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills) 的启发。
+本项目基于作者本人的文章 [Jobs Over Skills](https://homyzone.pages.dev/blogs/aigc/jobs-over-skills)。
 
 核心观点：**定时任务是实现自动化、自主进化的一个重要方式。**
