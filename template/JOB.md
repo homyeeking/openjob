@@ -1,29 +1,29 @@
 ---
 name: template-job
 cron: 0 9 * * *
-description: 替换为 Job 的描述，说明它做什么、何时使用
+description: Replace with description of what this job does and when to use it
 ---
 
-# Job 名称
+# Job Name
 
-## 目标
+## Objective
 
-[说明这个 Job 要完成什么]
+[Describe what this job should accomplish]
 
-## 执行步骤
+## Execution Steps
 
-1. [步骤 1 的详细描述]
-2. [步骤 2 的详细描述]
+1. [Detailed description of step 1]
+2. [Detailed description of step 2]
 3. ...
 
-## 输出要求
+## Output Requirements
 
-[期望的输出格式或结果]
+[Expected output format or results]
 
-## 注意事项
+## Notes
 
-[执行时需要注意的细节]
+[Important details to consider during execution]
 
-## 示例场景
+## Example Scenarios
 
-[什么情况下这个 Job 会被触发，期望什么结果]
+[When this job would trigger and what results are expected]

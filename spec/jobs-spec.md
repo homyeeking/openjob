@@ -1,176 +1,176 @@
-# Jobs 规范
+# Jobs Specification
 
-本文档定义了 Jobs 的标准格式和执行规范。
+This document defines the standard format and execution specification for Jobs.
 
-## 版本
+## Version
 
-当前版本：1.0.0
+Current version: 1.0.0
 
-## 概述
+## Overview
 
-Job 是一个包含 YAML frontmatter 和 Markdown 内容的文件，定义了一个可定时执行的任务。
+A Job is a file containing YAML frontmatter and Markdown content that defines a schedulable task.
 
-## 文件结构
+## File Structure
 
-每个 Job 必须是一个独立的文件夹，文件夹名即为 `name` 字段的值，包含一个 `JOB.md` 文件：
+Each Job must be in its own folder (named after the `name` field), containing a `JOB.md` file:
 
 ```
 my-job/
 └── JOB.md
 ```
 
-可选的额外文件/文件夹：
-- `scripts/` - 辅助脚本
-- `assets/` - 资源文件
-- `references/` - 参考文档
+Optional additional files/folders:
+- `scripts/` - Helper scripts
+- `assets/` - Resource files
+- `references/` - Reference documents
 
-## JOB.md 格式
+## JOB.md Format
 
 ### Frontmatter
 
-Frontmatter 是 YAML 格式，位于文件顶部，用 `---` 包裹：
+Frontmatter is in YAML format, wrapped with `---` at the top of the file:
 
 ```markdown
 ---
 name: job-name
 cron: 0 9 * * *
-description: Job 的描述
+description: Description of the job
 condition: ./scripts/check-condition.sh
 allowedSkills: [skill-1, skill-2]
 ---
 ```
 
-### 字段定义
+### Field Definitions
 
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `name` | string | 是 | Job 的唯一标识符。只能包含小写字母、数字和连字符。 |
-| `description` | string | 是 | Job 的完整描述，说明它做什么、何时使用、为什么使用。 |
-| `cron` | string | 是 | Cron 表达式，定义调度频率。 |
-| `condition` | string | 否 | 执行条件。可以是脚本路径（返回布尔值）或自然语言描述。 |
-| `allowedSkills` | array | 否 | 此 Job 执行时允许使用的 Skills 列表。不指定则允许所有 Skills。 |
-| `timeout` | number | 否 | 执行超时时间（分钟）。默认 60 分钟。 |
-| `retry` | number | 否 | 失败重试次数。默认 0（不重试）。 |
-| `tags` | array | 否 | 标签列表，用于分类和过滤。 |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Unique identifier for the job. Lowercase letters, numbers, and hyphens only. |
+| `description` | string | Yes | Complete description of what the job does, when to use it, and why. |
+| `cron` | string | Yes | Cron expression defining the schedule frequency. |
+| `condition` | string | No | Execution condition. Can be a script path (returns boolean) or natural language description. |
+| `allowedSkills` | array | No | List of Skills allowed for this job. All Skills are allowed if not specified. |
+| `timeout` | number | No | Execution timeout in minutes. Default: 60 minutes. |
+| `retry` | number | No | Number of retries on failure. Default: 0 (no retries). |
+| `tags` | array | No | List of tags for categorization and filtering. |
 
-### Cron 表达式
+### Cron Expression
 
-标准 5 字段 Cron 格式：
+Standard 5-field Cron format:
 
 ```
-┌───────────── 分钟 (0-59)
-│ ┌───────────── 小时 (0-23)
-│ │ ┌───────────── 日期 (1-31)
-│ │ │ ┌───────────── 月份 (1-12)
-│ │ │ │ ┌───────────── 星期 (0-6，周日为0)
+┌───────────── Minute (0-59)
+│ ┌───────────── Hour (0-23)
+│ │ ┌───────────── Day of month (1-31)
+│ │ │ ┌───────────── Month (1-12)
+│ │ │ │ ┌───────────── Day of week (0-6, Sunday is 0)
 │ │ │ │ │
 * * * * *
 ```
 
-特殊字符：
-- `*` - 匹配任意值
-- `,` - 分隔多个值（如 `1,15,30`）
-- `-` - 范围（如 `1-5` 表示周一到周五）
-- `/` - 步长（如 `*/30` 表示每 30）
+Special characters:
+- `*` - Match any value
+- `,` - Separate multiple values (e.g., `1,15,30`)
+- `-` - Range (e.g., `1-5` for Monday through Friday)
+- `/` - Step (e.g., `*/30` for every 30)
 
-常用示例：
+Common examples:
 
-| Cron | 说明 |
-|------|------|
-| `0 9 * * *` | 每天上午 9:00 |
-| `0 9 * * 1` | 每周一上午 9:00 |
-| `0 0 * * *` | 每天凌晨 0:00 |
-| `0 0 * * 0` | 每周日凌晨 0:00 |
-| `*/30 * * * *` | 每 30 分钟 |
-| `0 */6 * * *` | 每 6 小时 |
-| `0 9 1 * *` | 每月 1 号上午 9:00 |
+| Cron | Description |
+|------|-------------|
+| `0 9 * * *` | Every day at 9:00 AM |
+| `0 9 * * 1` | Every Monday at 9:00 AM |
+| `0 0 * * *` | Every day at midnight |
+| `0 0 * * 0` | Every Sunday at midnight |
+| `*/30 * * * *` | Every 30 minutes |
+| `0 */6 * * *` | Every 6 hours |
+| `0 9 1 * *` | 1st of every month at 9:00 AM |
 
-### Condition 条件
+### Condition
 
-`condition` 字段支持两种形式：
+The `condition` field supports two forms:
 
-#### 1. 脚本路径
+#### 1. Script Path
 
 ```yaml
 condition: ./scripts/is-claude-updated.sh
 ```
 
-脚本要求：
-- 可执行权限
-- 退出码 `0` 表示条件满足（执行 Job）
-- 退出码 `1` 表示条件不满足（跳过）
-- stdout 可输出简短原因
+Script requirements:
+- Executable permission
+- Exit code `0` = condition met (execute Job)
+- Exit code `1` = condition not met (skip)
+- stdout can output a brief reason
 
-#### 2. 自然语言描述
+#### 2. Natural Language Description
 
 ```yaml
-condition: 检查 ./TODO.md 是否有新增的待办事项
+condition: Check if there are new TODO items in ./TODO.md
 ```
 
-这种情况下，AI 会根据描述来判断条件是否满足。
+In this case, the AI will evaluate whether the condition is met based on the description.
 
-### Markdown 内容
+### Markdown Content
 
-Frontmatter 之后是 Markdown 格式的指令内容。这些内容会在 Job 触发时加载到 AI 的上下文中。
+After the frontmatter is the instruction content in Markdown format. This content is loaded into the AI's context when the Job triggers.
 
-建议的结构：
+Recommended structure:
 
 ```markdown
-# Job 名称
+# Job Name
 
-## 目标
-[说明这个 Job 要完成什么]
+## Objective
+[Describe what this job should accomplish]
 
-## 执行步骤
-1. [步骤 1]
-2. [步骤 2]
+## Execution Steps
+1. [Step 1]
+2. [Step 2]
 ...
 
-## 输出要求
-[期望的输出格式或结果]
+## Output Requirements
+[Expected output format or results]
 
-## 注意事项
-[执行时需要注意的细节]
+## Notes
+[Important details to consider]
 ```
 
-## 执行流程
+## Execution Flow
 
-### 1. 调度检查
+### 1. Schedule Check
 
-调度器按 cron 表达式定时唤醒，检查：
-- 当前时间是否匹配 cron 表达式
-- 上一次执行是否成功完成
+The scheduler wakes up according to the cron expression and checks:
+- If current time matches the cron expression
+- If the previous execution completed successfully
 
-### 2. 条件判断
+### 2. Condition Evaluation
 
-如果定义了 `condition`：
-- 执行条件脚本或 AI 判断条件
-- 条件满足则继续，否则等待下一个周期
+If `condition` is defined:
+- Execute the condition script or have AI evaluate it
+- Continue if condition met, otherwise wait for next cycle
 
-### 3. 加载上下文
+### 3. Load Context
 
-执行前准备：
-- 加载 `allowedSkills` 指定的 Skills
-- 加载 Job 自身的 Markdown 指令
-- 准备执行环境
+Preparation before execution:
+- Load Skills specified in `allowedSkills`
+- Load the Job's own Markdown instructions
+- Prepare execution environment
 
-### 4. 执行任务
+### 4. Execute Task
 
-AI 根据指令执行任务：
-- 可以调用允许的 Skills
-- 可以使用工具（文件读写、命令执行等）
-- 记录执行过程和结果
+AI executes the task based on instructions:
+- Can call allowed Skills
+- Can use tools (file read/write, command execution, etc.)
+- Record execution process and results
 
-### 5. 结果反馈
+### 5. Result Feedback
 
-执行完成后：
-- 记录执行状态（成功/失败）
-- 记录输出和日志
-- 失败时根据 `retry` 配置决定是否重试
+After execution completes:
+- Record execution status (success/failure)
+- Record output and logs
+- Decide whether to retry based on `retry` configuration
 
-## 状态持久化
+## State Persistence
 
-建议记录每个 Job 的执行状态：
+Recommended to record each Job's execution state:
 
 ```json
 {
@@ -182,45 +182,45 @@ AI 根据指令执行任务：
 }
 ```
 
-## 错误处理
+## Error Handling
 
-### 超时
+### Timeout
 
-- 超过 `timeout` 时间后强制终止
-- 记录超时状态
-- 根据 `retry` 决定是否重试
+- Force terminate after `timeout` duration
+- Record timeout status
+- Decide whether to retry based on `retry`
 
-### 失败
+### Failure
 
-- 记录错误信息
-- `retry > 0` 时按指数退避重试
-- 连续失败达到阈值可考虑禁用 Job
+- Record error information
+- Retry with exponential backoff when `retry > 0`
+- Consider disabling Job after reaching consecutive failure threshold
 
-## 最佳实践
+## Best Practices
 
-### 1. Job 粒度
+### 1. Job Granularity
 
-- 每个 Job 应该有单一、明确的目标
-- 复杂任务可以拆分为多个 Jobs，通过依赖关系协调
-- 避免过长的执行时间（建议 < 30 分钟）
+- Each Job should have a single, clear objective
+- Complex tasks can be split into multiple Jobs coordinated through dependencies
+- Avoid long execution times (recommended: < 30 minutes)
 
-### 2. 幂等性
+### 2. Idempotency
 
-- Job 应该是幂等的：多次执行产生相同的结果
-- 记录已经处理过的项目，避免重复处理
+- Job should be idempotent: multiple executions produce the same result
+- Track processed items to avoid duplicate processing
 
-### 3. 可观测性
+### 3. Observability
 
-- 在指令中要求清晰的日志输出
-- 记录关键决策点
-- 输出结构化的结果（JSON 等）便于后续处理
+- Require clear log output in instructions
+- Record key decision points
+- Output structured results (JSON, etc.) for post-processing
 
-### 4. 安全性
+### 4. Security
 
-- 敏感信息通过环境变量注入，不要硬编码
-- 脚本执行前验证来源
-- 限制 Job 的权限范围
+- Inject sensitive information through environment variables, don't hardcode
+- Verify source before script execution
+- Limit Job's permission scope
 
-## 示例
+## Examples
 
-完整示例请参考 [示例 Jobs](../jobs/) 目录。
+See the [example Jobs](../jobs/) directory for complete examples.
