@@ -473,6 +473,241 @@
       text-align: center;
     }
 
+    /* ── Search Shortcut Hint ── */
+    .search-shortcut {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 24px; height: 24px;
+      padding: 0 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    /* ── Sort Select ── */
+    .sort-select {
+      appearance: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 32px 8px 12px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: border-color 0.2s;
+    }
+    .sort-select:hover { border-color: var(--border-hover); }
+    .sort-select:focus { outline: none; border-color: var(--accent); }
+    .sort-select option { background: var(--bg-card); color: var(--text-primary); }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      padding: 24px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-overlay.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 640px; width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp 0.25s ease;
+    }
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 28px 28px 0;
+    }
+    .modal-header h2 {
+      font-size: 22px; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .modal-close {
+      background: none; border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .modal-close:hover { color: var(--text-primary); background: var(--border); }
+    .modal-body { padding: 20px 28px 28px; }
+    .modal-body .detail-section { margin-bottom: 20px; }
+    .modal-body .detail-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .modal-body .detail-value {
+      font-size: 15px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    .modal-body .detail-meta {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .modal-body .detail-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--text-primary);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.7;
+    }
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-footer .install-inline {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: #0a0a0a;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      border: 1px solid var(--border);
+    }
+    .modal-footer .install-inline:hover { border-color: var(--accent); }
+    .modal-footer .install-inline .prompt { color: var(--accent); }
+    .modal-footer a.btn {
+      display: inline-flex; align-items: center;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #000;
+      font-size: 13px; font-weight: 600;
+      border-radius: 6px;
+      transition: opacity 0.2s;
+    }
+    .modal-footer a.btn:hover { opacity: 0.85; text-decoration: none; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text-primary);
+      color: var(--bg);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      z-index: 300;
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 48px;
+      padding: 40px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px; font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      padding: 80px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .cta-section h2 {
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .cta-section p {
+      color: var(--text-secondary);
+      max-width: 520px; margin: 0 auto 32px;
+      font-size: 16px;
+    }
+    .cta-buttons {
+      display: flex; justify-content: center; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #000;
+      font-size: 15px; font-weight: 600;
+      border-radius: 8px;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; text-decoration: none; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 15px; font-weight: 600;
+      border-radius: 8px;
+      transition: border-color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--border-hover); text-decoration: none; }
+
+    /* ── Execution Flow Diagram ── */
+    .flow-diagram {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+      padding: 20px 0;
+    }
+    .flow-step {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 16px 12px;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 100px;
+    }
+    .flow-step .flow-icon { font-size: 20px; margin-bottom: 6px; }
+    .flow-step .flow-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+    .flow-arrow {
+      color: var(--text-tertiary);
+      font-size: 18px;
+      padding: 0 8px;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 640px) {
       nav { padding: 12px 20px; }
@@ -484,6 +719,9 @@
       }
       .job-stats { grid-column: 1 / -1; text-align: left; }
       .leaderboard-header { flex-direction: column; align-items: flex-start; }
+      .stats-bar { gap: 24px; flex-wrap: wrap; }
+      .stat-number { font-size: 28px; }
+      .modal { margin: 12px; max-height: 90vh; }
     }
   </style>
 </head>
@@ -527,27 +765,75 @@
   </div>
 </section>
 
+<!-- Stats Bar -->
+<section class="stats-bar" id="statsBar">
+  <div class="stat-item">
+    <div class="stat-number" data-target="37.9" data-suffix="K">0</div>
+    <div class="stat-label">Total Installs</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number" data-target="8" data-suffix="">0</div>
+    <div class="stat-label">Jobs Available</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number" data-target="4" data-suffix="">0</div>
+    <div class="stat-label">Categories</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number" data-target="15" data-suffix="">0</div>
+    <div class="stat-label">Agent Integrations</div>
+  </div>
+</section>
+
 <!-- Leaderboard -->
 <div class="container" id="leaderboard">
   <div class="leaderboard-header">
     <h2>Job Leaderboard</h2>
-    <div class="filter-tabs">
-      <button class="filter-tab active" data-filter="all">All Jobs</button>
-      <button class="filter-tab" data-filter="automation">Automation</button>
-      <button class="filter-tab" data-filter="monitoring">Monitoring</button>
-      <button class="filter-tab" data-filter="maintenance">Maintenance</button>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Jobs</button>
+        <button class="filter-tab" data-filter="automation">Automation</button>
+        <button class="filter-tab" data-filter="monitoring">Monitoring</button>
+        <button class="filter-tab" data-filter="maintenance">Maintenance</button>
+      </div>
+      <select class="sort-select" id="sortSelect">
+        <option value="rank">Sort: Rank</option>
+        <option value="installs">Sort: Installs</option>
+        <option value="name">Sort: Name</option>
+        <option value="timeout">Sort: Duration</option>
+      </select>
     </div>
   </div>
 
   <div class="search-bar">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="Search jobs..." />
+    <input type="text" id="searchInput" placeholder="Search jobs by name, description, or tag..." />
+    <span class="search-shortcut">/</span>
   </div>
 
   <div class="job-list" id="jobList">
     <!-- filled by JS -->
   </div>
 </div>
+
+<!-- Execution Flow -->
+<section class="compare-section" style="padding-top:40px">
+  <div class="container">
+    <h2>Execution Flow</h2>
+    <p>How a Job runs from trigger to completion</p>
+    <div class="flow-diagram">
+      <div class="flow-step"><div class="flow-icon">&#9200;</div><div class="flow-label">Cron Check</div></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step"><div class="flow-icon">&#10003;</div><div class="flow-label">Condition</div></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step"><div class="flow-icon">&#128196;</div><div class="flow-label">Load Context</div></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step"><div class="flow-icon">&#9889;</div><div class="flow-label">Execute</div></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step"><div class="flow-icon">&#128221;</div><div class="flow-label">Log Result</div></div>
+    </div>
+  </div>
+</section>
 
 <!-- How It Works -->
 <section class="how-section" id="how-it-works">
@@ -652,6 +938,26 @@
   </div>
 </section>
 
+<!-- CTA Section -->
+<section class="cta-section">
+  <h2>Create Your Own Job</h2>
+  <p>Have an idea for an automated task? Jobs are just Markdown files with a cron schedule. Share yours with the community.</p>
+  <div class="cta-buttons">
+    <a href="template/JOB.md" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Use Template
+    </a>
+    <a href="spec/jobs-spec.md" class="btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Read Spec
+    </a>
+    <a href="https://github.com/HomyeeKing/jobs" class="btn-secondary" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+</section>
+
 <!-- Footer -->
 <footer>
   <div class="footer-grid">
@@ -686,6 +992,23 @@
   </div>
 </footer>
 
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" id="modalClose">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script>
 // ── Data ──
 const jobs = [
@@ -693,97 +1016,129 @@ const jobs = [
     rank: 1,
     name: 'todo-night-executor',
     desc: 'Automatically discover and execute TODO items in the project during user\'s sleep time. "Record TODO before sleep, see results when waking up."',
+    fullDesc: 'Scans your project for TODO items in code comments, TODO.md files, and README sections. Evaluates complexity and priority, then executes tasks autonomously overnight. Generates a morning execution report with completed tasks, blockers, and suggestions.',
     tags: ['automation', 'development', 'todo'],
     cron: '0 0 * * *',
     cronLabel: 'Daily at midnight',
     timeout: 360,
     retry: 1,
     installs: '12.4K',
-    category: 'automation'
+    category: 'automation',
+    allowedSkills: ['commit-push'],
+    condition: 'Check if there are unfinished TODO items in current directory',
+    steps: ['Discover TODOs (code comments, TODO.md, README)', 'Evaluate priority and complexity', 'Execute high-priority tasks first', 'Generate execution report']
   },
   {
     rank: 2,
     name: 'claude-news-collect',
     desc: 'Collect Claude-related official updates daily. If there is new content, summarize and publish to personal blog automatically.',
+    fullDesc: 'Monitors Anthropic\'s official blog, documentation changelogs, and GitHub releases for new Claude-related content. When updates are found, generates a structured summary article covering new features, improvements, and breaking changes, then publishes to your blog.',
     tags: ['monitoring', 'claude', 'blog'],
     cron: '0 10 * * *',
     cronLabel: 'Daily at 10 AM',
     timeout: 60,
     retry: 0,
     installs: '8.7K',
-    category: 'monitoring'
+    category: 'monitoring',
+    allowedSkills: ['write-to-blog'],
+    condition: 'Check if there are new updates from Claude official channels',
+    steps: ['Check Anthropic blog, docs, and GitHub releases', 'Filter for genuinely new content', 'Write structured summary article', 'Publish to blog']
   },
   {
     rank: 3,
     name: 'npm-global-update',
     desc: 'Automatically update installed npm global packages every Monday to keep the development environment up to date.',
+    fullDesc: 'Keeps your global npm packages current by running weekly updates. Records version lists before and after, flags major version bumps separately, and handles errors gracefully without affecting subsequent package updates.',
     tags: ['maintenance', 'npm'],
     cron: '0 9 * * 1',
     cronLabel: 'Every Monday 9 AM',
     timeout: 30,
     retry: 0,
     installs: '5.2K',
-    category: 'maintenance'
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    steps: ['List current global packages', 'Execute npm update -g', 'Verify update results', 'Record warnings and errors']
   },
   {
     rank: 4,
     name: 'security-audit-weekly',
     desc: 'Run npm audit and dependency vulnerability checks every week. Generate a report and flag critical issues for immediate review.',
+    fullDesc: 'Performs comprehensive security audits on your project dependencies. Checks for known vulnerabilities, outdated packages with security patches, and generates prioritized reports. Critical issues are flagged for immediate developer attention.',
     tags: ['security', 'audit', 'npm'],
     cron: '0 8 * * 1',
     cronLabel: 'Every Monday 8 AM',
     timeout: 45,
     retry: 1,
     installs: '3.8K',
-    category: 'maintenance'
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    steps: ['Run npm audit', 'Check for outdated dependencies', 'Analyze vulnerability severity', 'Generate prioritized report']
   },
   {
     rank: 5,
     name: 'pr-review-notifier',
     desc: 'Monitor open pull requests across repositories. Notify the team when PRs are stale for more than 48 hours or need review.',
+    fullDesc: 'Tracks open pull requests across your repositories and identifies stale reviews. Sends notifications when PRs have been waiting for review for more than 48 hours, helping teams maintain healthy review cycles and avoid blocked development.',
     tags: ['monitoring', 'github', 'notifications'],
     cron: '0 9,17 * * 1-5',
     cronLabel: 'Weekdays 9 AM & 5 PM',
     timeout: 20,
     retry: 0,
     installs: '2.9K',
-    category: 'monitoring'
+    category: 'monitoring',
+    allowedSkills: [],
+    condition: '',
+    steps: ['Fetch open PRs from GitHub API', 'Calculate time since last review', 'Identify stale PRs (>48h)', 'Send notification summary']
   },
   {
     rank: 6,
     name: 'ci-health-check',
     desc: 'Check CI/CD pipeline health across all repos. Alert on consecutive failures and auto-create issues for broken main branches.',
+    fullDesc: 'Monitors CI/CD pipeline status across all connected repositories. Detects consecutive failures, broken main branches, and flaky tests. Automatically creates GitHub issues for persistent failures and sends alerts to the responsible team.',
     tags: ['monitoring', 'ci', 'devops'],
     cron: '*/30 * * * *',
     cronLabel: 'Every 30 minutes',
     timeout: 15,
     retry: 2,
     installs: '2.1K',
-    category: 'monitoring'
+    category: 'monitoring',
+    allowedSkills: [],
+    condition: '',
+    steps: ['Check CI status for all repos', 'Detect consecutive failures', 'Auto-create issues for broken main', 'Send alert notifications']
   },
   {
     rank: 7,
     name: 'changelog-generator',
     desc: 'Analyze git commits since the last release tag and generate a structured changelog. Draft release notes for review.',
+    fullDesc: 'Automatically generates changelogs by analyzing git commit history since the last release tag. Groups changes by type (features, fixes, breaking changes), drafts release notes in conventional format, and prepares them for team review before publishing.',
     tags: ['automation', 'git', 'release'],
     cron: '0 18 * * 5',
     cronLabel: 'Fridays at 6 PM',
     timeout: 30,
     retry: 0,
     installs: '1.6K',
-    category: 'automation'
+    category: 'automation',
+    allowedSkills: [],
+    condition: '',
+    steps: ['Find last release tag', 'Analyze commits since tag', 'Group by conventional type', 'Draft release notes']
   },
   {
     rank: 8,
     name: 'doc-sync-checker',
     desc: 'Compare API endpoints in code with documentation. Flag mismatches, missing docs, and outdated examples for developers to fix.',
+    fullDesc: 'Validates documentation accuracy by comparing API endpoints defined in code against their documentation. Identifies mismatches, missing documentation, outdated examples, and parameter changes. Generates actionable reports for developers.',
     tags: ['maintenance', 'docs', 'api'],
     cron: '0 7 * * 3',
     cronLabel: 'Wednesdays at 7 AM',
     timeout: 45,
     retry: 0,
     installs: '1.2K',
-    category: 'maintenance'
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    steps: ['Extract API endpoints from code', 'Parse documentation references', 'Compare parameters and responses', 'Generate mismatch report']
   }
 ];
 
@@ -793,25 +1148,119 @@ const agents = [
   'OpenCode', 'Trae', 'VS Code', 'Antigravity'
 ];
 
+// ── State ──
+let currentFilter = 'all';
+let currentSearch = '';
+let currentSort = 'rank';
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Copy ──
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+}
+
 // ── Marquee ──
 function renderMarquee() {
   const track = document.getElementById('marquee');
-  const items = [...agents, ...agents]; // duplicate for seamless loop
+  const items = [...agents, ...agents];
   track.innerHTML = items.map(a =>
     `<div class="marquee-item"><span class="dot"></span>${a}</div>`
   ).join('');
 }
 
+// ── Modal ──
+function openModal(job) {
+  const overlay = document.getElementById('modalOverlay');
+  document.getElementById('modalTitle').textContent = job.name;
+
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="detail-section">
+      <div class="detail-label">Description</div>
+      <div class="detail-value">${job.fullDesc || job.desc}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Schedule</div>
+      <div class="detail-meta">
+        <span class="cron-badge">&xcup; ${job.cron}</span>
+        <span class="cron-badge" style="background:#1a2a1a;color:#88cc88">${job.cronLabel}</span>
+        ${job.timeout ? `<span class="timeout-badge">${job.timeout}min timeout</span>` : ''}
+        ${job.retry ? `<span class="timeout-badge" style="background:#2a1a2a;color:#cc88cc">${job.retry}x retry</span>` : ''}
+      </div>
+    </div>
+    ${job.condition ? `
+    <div class="detail-section">
+      <div class="detail-label">Condition</div>
+      <div class="detail-code">${job.condition}</div>
+    </div>` : ''}
+    <div class="detail-section">
+      <div class="detail-label">Execution Steps</div>
+      <div class="detail-code">${job.steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}</div>
+    </div>
+    ${job.allowedSkills && job.allowedSkills.length ? `
+    <div class="detail-section">
+      <div class="detail-label">Allowed Skills</div>
+      <div class="detail-meta">${job.allowedSkills.map(s => `<span class="tag">${s}</span>`).join('')}</div>
+    </div>` : ''}
+    <div class="detail-section">
+      <div class="detail-label">Tags</div>
+      <div class="detail-meta">${job.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Install</div>
+      <div class="detail-code">npx jobs add HomyeeKing/jobs/${job.name}</div>
+    </div>
+  `;
+
+  const footer = document.getElementById('modalFooter');
+  footer.innerHTML = `
+    <div class="install-inline" onclick="copyText('npx jobs add HomyeeKing/jobs/${job.name}')">
+      <span class="prompt">$</span> npx jobs add ... <span style="color:var(--text-tertiary);font-size:11px;font-family:Inter">copy</span>
+    </div>
+    <a href="jobs/${job.name}/JOB.md" class="btn">View Source</a>
+  `;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Parse install count for sorting ──
+function parseInstalls(s) {
+  const num = parseFloat(s);
+  return s.includes('K') ? num * 1000 : num;
+}
+
 // ── Job List ──
-function renderJobs(filter = 'all', search = '') {
+function renderJobs() {
   const list = document.getElementById('jobList');
   let filtered = jobs;
 
-  if (filter !== 'all') {
-    filtered = filtered.filter(j => j.category === filter);
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(j => j.category === currentFilter);
   }
-  if (search) {
-    const q = search.toLowerCase();
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
     filtered = filtered.filter(j =>
       j.name.includes(q) ||
       j.desc.toLowerCase().includes(q) ||
@@ -819,13 +1268,28 @@ function renderJobs(filter = 'all', search = '') {
     );
   }
 
+  // Sort
+  filtered = [...filtered].sort((a, b) => {
+    switch (currentSort) {
+      case 'installs': return parseInstalls(b.installs) - parseInstalls(a.installs);
+      case 'name': return a.name.localeCompare(b.name);
+      case 'timeout': return (b.timeout || 0) - (a.timeout || 0);
+      default: return a.rank - b.rank;
+    }
+  });
+
   if (filtered.length === 0) {
-    list.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-tertiary)">No jobs found matching your criteria.</div>`;
+    list.innerHTML = `
+      <div style="text-align:center;padding:60px 0;color:var(--text-tertiary)">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px;opacity:0.4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/></svg>
+        <div style="font-size:16px;margin-bottom:4px">No jobs found</div>
+        <div style="font-size:14px">Try a different search term or filter</div>
+      </div>`;
     return;
   }
 
   list.innerHTML = filtered.map(j => `
-    <div class="job-card">
+    <div class="job-card" data-name="${j.name}">
       <div class="job-rank">#${j.rank}</div>
       <div class="job-info">
         <div class="job-name">${j.name}</div>
@@ -842,6 +1306,14 @@ function renderJobs(filter = 'all', search = '') {
       </div>
     </div>
   `).join('');
+
+  // Attach click handlers
+  list.querySelectorAll('.job-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const job = jobs.find(j => j.name === card.dataset.name);
+      if (job) openModal(job);
+    });
+  });
 }
 
 // ── Filters ──
@@ -849,19 +1321,65 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    renderJobs(tab.dataset.filter, document.getElementById('searchInput').value);
+    currentFilter = tab.dataset.filter;
+    renderJobs();
   });
 });
 
 // ── Search ──
 document.getElementById('searchInput').addEventListener('input', (e) => {
-  const activeTab = document.querySelector('.filter-tab.active');
-  renderJobs(activeTab.dataset.filter, e.target.value);
+  currentSearch = e.target.value;
+  renderJobs();
 });
+
+// ── Keyboard shortcut: "/" to focus search ──
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+});
+
+// ── Sort ──
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+  currentSort = e.target.value;
+  renderJobs();
+});
+
+// ── Animated Counters ──
+function animateCounters() {
+  const counters = document.querySelectorAll('.stat-number[data-target]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseFloat(el.dataset.target);
+        const suffix = el.dataset.suffix || '';
+        const duration = 1200;
+        const start = performance.now();
+        const isFloat = target % 1 !== 0;
+
+        function tick(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+          const current = target * eased;
+          el.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  counters.forEach(c => observer.observe(c));
+}
 
 // ── Init ──
 renderMarquee();
 renderJobs();
+animateCounters();
 </script>
 
 </body>
