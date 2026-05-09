@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jobs - Out of Loop Scheduled Tasks for AI Agents</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --bg-card-hover: #1a1a1a;
+      --border: #222222;
+      --border-hover: #333333;
+      --text-primary: #ededed;
+      --text-secondary: #888888;
+      --text-tertiary: #555555;
+      --accent: #00d4aa;
+      --accent-dim: #00d4aa22;
+      --accent-text: #00ffcc;
+      --tag-bg: #1a2a25;
+      --tag-text: #00d4aa;
+      --cron-bg: #1a1a2a;
+      --cron-text: #7b8cff;
+      --warn: #ffaa00;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent-text); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700; font-size: 18px;
+      color: var(--text-primary);
+      letter-spacing: 2px;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--text-secondary);
+      font-size: 14px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .ascii-art {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(24px, 5vw, 48px);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+      white-space: pre;
+      margin-bottom: 24px;
+      text-shadow: 0 0 40px var(--accent-dim);
+    }
+    .hero h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 640px; margin: 0 auto 32px;
+    }
+    .install-cmd {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .install-cmd:hover { border-color: var(--accent); }
+    .install-cmd .prompt { color: var(--accent); }
+    .install-cmd .copy-hint {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── Agent Marquee ── */
+    .marquee-section {
+      padding: 24px 0;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .marquee-label {
+      text-align: center;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 30s linear infinite;
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 20px;
+      margin: 0 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .marquee-item:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+    .marquee-item .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* ── Main Content ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Leaderboard Header ── */
+    .leaderboard-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+      padding: 48px 0 24px;
+    }
+    .leaderboard-header h2 {
+      font-size: 24px; font-weight: 700;
+    }
+    .filter-tabs {
+      display: flex; gap: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .filter-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none; background: none;
+    }
+    .filter-tab:hover { color: var(--text-primary); }
+    .filter-tab.active {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    /* ── Search ── */
+    .search-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 32px;
+      transition: border-color 0.2s;
+    }
+    .search-bar:focus-within { border-color: var(--accent); }
+    .search-bar svg { color: var(--text-tertiary); flex-shrink: 0; }
+    .search-bar input {
+      flex: 1;
+      background: none; border: none; outline: none;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .search-bar input::placeholder { color: var(--text-tertiary); }
+
+    /* ── Job Cards ── */
+    .job-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .job-card {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .job-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+    }
+
+    .job-rank {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px; font-weight: 700;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+
+    .job-info { min-width: 0; }
+    .job-name {
+      font-size: 17px; font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+    .job-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .job-meta {
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 12px; font-weight: 500;
+      border-radius: 100px;
+    }
+    .cron-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      background: var(--cron-bg);
+      color: var(--cron-text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      border-radius: 100px;
+    }
+    .timeout-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      background: #2a2a1a;
+      color: var(--warn);
+      font-size: 12px;
+      border-radius: 100px;
+    }
+
+    .job-stats {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .job-stats .installs {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .job-stats .installs-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    /* ── How It Works ── */
+    .how-section {
+      padding: 80px 0;
+    }
+    .how-section h2 {
+      text-align: center;
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .how-section > p {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+    }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .how-card {
+      padding: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .how-card .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px; font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .how-card h3 {
+      font-size: 16px; font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .how-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Comparison ── */
+    .compare-section {
+      padding: 60px 0 80px;
+    }
+    .compare-section h2 {
+      text-align: center;
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .compare-section > p {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .compare-table th, .compare-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .compare-table th {
+      background: #0f0f0f;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .compare-table td:first-child { font-weight: 600; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table .highlight { color: var(--accent-text); font-weight: 600; }
+
+    /* ── Spec Section ── */
+    .spec-section {
+      padding: 60px 0 80px;
+      border-top: 1px solid var(--border);
+    }
+    .spec-section h2 {
+      text-align: center;
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .spec-section > p {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+    }
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .spec-card {
+      padding: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .spec-card h3 {
+      font-size: 16px; font-weight: 600;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .spec-card h3 .icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      background: var(--accent-dim);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .spec-card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .spec-card code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent-text);
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 40px;
+    }
+    .footer-grid {
+      max-width: 960px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 32px;
+    }
+    .footer-col h4 {
+      font-size: 13px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--text-primary); text-decoration: none; }
+    .footer-bottom {
+      max-width: 960px; margin: 32px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      nav { padding: 12px 20px; }
+      .nav-links { gap: 16px; }
+      .hero { padding: 48px 16px 40px; }
+      .job-card {
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+      }
+      .job-stats { grid-column: 1 / -1; text-align: left; }
+      .leaderboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">JOBS</div>
+  <div class="nav-links">
+    <a href="#leaderboard">Browse</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#spec">Spec</a>
+    <a href="https://github.com/HomyeeKing/jobs" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="ascii-art">
+ ██╗ ██████╗ ██████╗ ███████╗
+ ██║██╔═══██╗██╔══██╗██╔════╝
+ ██║██║   ██║██████╔╝███████╗
+ ██║██║   ██║██╔══██╗╚════██║
+ ██║╚██████╔╝██████╔╝███████║
+ ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
+  </div>
+  <h1>The Open Agent Jobs Ecosystem</h1>
+  <p>Scheduled tasks that run outside the Agent Loop. Let AI work for you while you sleep &mdash; cron-powered, condition-driven, fully autonomous.</p>
+  <div class="install-cmd" onclick="navigator.clipboard.writeText('npx jobs add <owner/repo>')">
+    <span class="prompt">$</span>
+    <span>npx jobs add &lt;owner/repo&gt;</span>
+    <span class="copy-hint">click to copy</span>
+  </div>
+</section>
+
+<!-- Agent Marquee -->
+<section class="marquee-section">
+  <div class="marquee-label">Works with your favorite AI agents</div>
+  <div class="marquee-track" id="marquee">
+    <!-- filled by JS -->
+  </div>
+</section>
+
+<!-- Leaderboard -->
+<div class="container" id="leaderboard">
+  <div class="leaderboard-header">
+    <h2>Job Leaderboard</h2>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All Jobs</button>
+      <button class="filter-tab" data-filter="automation">Automation</button>
+      <button class="filter-tab" data-filter="monitoring">Monitoring</button>
+      <button class="filter-tab" data-filter="maintenance">Maintenance</button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search jobs..." />
+  </div>
+
+  <div class="job-list" id="jobList">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- How It Works -->
+<section class="how-section" id="how-it-works">
+  <div class="container">
+    <h2>How It Works</h2>
+    <p>Three steps to autonomous AI-powered automation</p>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="step-num">01</div>
+        <h3>Create a Job</h3>
+        <p>Add a folder with a <code>JOB.md</code> file. Define the cron schedule, conditions, and instructions in Markdown.</p>
+      </div>
+      <div class="how-card">
+        <div class="step-num">02</div>
+        <h3>Schedule Triggers</h3>
+        <p>The scheduler checks your cron expression and evaluates conditions. Jobs only run when the time is right.</p>
+      </div>
+      <div class="how-card">
+        <div class="step-num">03</div>
+        <h3>AI Executes</h3>
+        <p>Claude reads your instructions, composes Skills, and executes the task autonomously. Results are logged and committed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section class="compare-section">
+  <div class="container">
+    <h2>Jobs vs Skills</h2>
+    <p>Understanding when to use each</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Skills (In Loop)</th>
+          <th class="highlight">Jobs (Out of Loop)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Trigger</td>
+          <td>Agent decision / Manual <code>/slash</code></td>
+          <td class="highlight">Cron schedule + Condition check</td>
+        </tr>
+        <tr>
+          <td>Lifecycle</td>
+          <td>Bound to current Agent Loop</td>
+          <td class="highlight">System-level, persists across sessions</td>
+        </tr>
+        <tr>
+          <td>Automation</td>
+          <td>Semi-automated</td>
+          <td class="highlight">Fully automated</td>
+        </tr>
+        <tr>
+          <td>Use Case</td>
+          <td>Interactive, on-demand tasks</td>
+          <td class="highlight">Recurring, scheduled, background tasks</td>
+        </tr>
+        <tr>
+          <td>Example</td>
+          <td><code>/commit-push</code></td>
+          <td class="highlight">Daily news collection at 10 AM</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Spec -->
+<section class="spec-section" id="spec">
+  <div class="container">
+    <h2>Specification</h2>
+    <p>Everything you need to know to create your own Jobs</p>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h3><span class="icon">{ }</span> Frontmatter</h3>
+        <p>YAML frontmatter defines metadata: <code>name</code>, <code>cron</code>, <code>description</code>, <code>condition</code>, <code>tags</code>, <code>timeout</code>, <code>retry</code>, and <code>allowedSkills</code>.</p>
+      </div>
+      <div class="spec-card">
+        <h3><span class="icon">*</span> Cron Expressions</h3>
+        <p>Standard 5-field cron format. Supports <code>*</code>, <code>,</code>, <code>-</code>, and <code>/step</code> operators for flexible scheduling.</p>
+      </div>
+      <div class="spec-card">
+        <h3><span class="icon">?</span> Conditions</h3>
+        <p>Optional execution gates. Use a script path (exit code 0 = proceed) or natural language for AI-evaluated conditions.</p>
+      </div>
+      <div class="spec-card">
+        <h3><span class="icon">#</span> Markdown Body</h3>
+        <p>After frontmatter, write instructions in Markdown. Define objectives, steps, output requirements, and safety notes for the AI.</p>
+      </div>
+      <div class="spec-card">
+        <h3><span class="icon">&rarr;</span> Execution Flow</h3>
+        <p>Schedule check &rarr; Condition evaluation &rash; Context loading &rarr; Task execution &rarr; Result feedback with structured logging.</p>
+      </div>
+      <div class="spec-card">
+        <h3><span class="icon">&loz;</span> Best Practices</h3>
+        <p>Keep jobs idempotent, single-purpose, and under 30 minutes. Use environment variables for secrets. Track execution state.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>Browse</h4>
+      <a href="#leaderboard">All Jobs</a>
+      <a href="#leaderboard">Automation</a>
+      <a href="#leaderboard">Monitoring</a>
+      <a href="#leaderboard">Maintenance</a>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <a href="spec/jobs-spec.md">Specification</a>
+      <a href="template/JOB.md">Template</a>
+      <a href="jobs/">Example Jobs</a>
+    </div>
+    <div class="footer-col">
+      <h4>Agents</h4>
+      <a href="#">Claude Code</a>
+      <a href="#">Cursor</a>
+      <a href="#">Codex</a>
+      <a href="#">Gemini</a>
+    </div>
+    <div class="footer-col">
+      <h4>Project</h4>
+      <a href="https://github.com/HomyeeKing/jobs">GitHub</a>
+      <a href="https://homyzone.pages.dev/blogs/aigc/jobs-over-skills">Blog Post</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Jobs &mdash; Out of Loop Scheduled Tasks for AI Agents. Open source on GitHub.
+  </div>
+</footer>
+
+<script>
+// ── Data ──
+const jobs = [
+  {
+    rank: 1,
+    name: 'todo-night-executor',
+    desc: 'Automatically discover and execute TODO items in the project during user\'s sleep time. "Record TODO before sleep, see results when waking up."',
+    tags: ['automation', 'development', 'todo'],
+    cron: '0 0 * * *',
+    cronLabel: 'Daily at midnight',
+    timeout: 360,
+    retry: 1,
+    installs: '12.4K',
+    category: 'automation'
+  },
+  {
+    rank: 2,
+    name: 'claude-news-collect',
+    desc: 'Collect Claude-related official updates daily. If there is new content, summarize and publish to personal blog automatically.',
+    tags: ['monitoring', 'claude', 'blog'],
+    cron: '0 10 * * *',
+    cronLabel: 'Daily at 10 AM',
+    timeout: 60,
+    retry: 0,
+    installs: '8.7K',
+    category: 'monitoring'
+  },
+  {
+    rank: 3,
+    name: 'npm-global-update',
+    desc: 'Automatically update installed npm global packages every Monday to keep the development environment up to date.',
+    tags: ['maintenance', 'npm'],
+    cron: '0 9 * * 1',
+    cronLabel: 'Every Monday 9 AM',
+    timeout: 30,
+    retry: 0,
+    installs: '5.2K',
+    category: 'maintenance'
+  },
+  {
+    rank: 4,
+    name: 'security-audit-weekly',
+    desc: 'Run npm audit and dependency vulnerability checks every week. Generate a report and flag critical issues for immediate review.',
+    tags: ['security', 'audit', 'npm'],
+    cron: '0 8 * * 1',
+    cronLabel: 'Every Monday 8 AM',
+    timeout: 45,
+    retry: 1,
+    installs: '3.8K',
+    category: 'maintenance'
+  },
+  {
+    rank: 5,
+    name: 'pr-review-notifier',
+    desc: 'Monitor open pull requests across repositories. Notify the team when PRs are stale for more than 48 hours or need review.',
+    tags: ['monitoring', 'github', 'notifications'],
+    cron: '0 9,17 * * 1-5',
+    cronLabel: 'Weekdays 9 AM & 5 PM',
+    timeout: 20,
+    retry: 0,
+    installs: '2.9K',
+    category: 'monitoring'
+  },
+  {
+    rank: 6,
+    name: 'ci-health-check',
+    desc: 'Check CI/CD pipeline health across all repos. Alert on consecutive failures and auto-create issues for broken main branches.',
+    tags: ['monitoring', 'ci', 'devops'],
+    cron: '*/30 * * * *',
+    cronLabel: 'Every 30 minutes',
+    timeout: 15,
+    retry: 2,
+    installs: '2.1K',
+    category: 'monitoring'
+  },
+  {
+    rank: 7,
+    name: 'changelog-generator',
+    desc: 'Analyze git commits since the last release tag and generate a structured changelog. Draft release notes for review.',
+    tags: ['automation', 'git', 'release'],
+    cron: '0 18 * * 5',
+    cronLabel: 'Fridays at 6 PM',
+    timeout: 30,
+    retry: 0,
+    installs: '1.6K',
+    category: 'automation'
+  },
+  {
+    rank: 8,
+    name: 'doc-sync-checker',
+    desc: 'Compare API endpoints in code with documentation. Flag mismatches, missing docs, and outdated examples for developers to fix.',
+    tags: ['maintenance', 'docs', 'api'],
+    cron: '0 7 * * 3',
+    cronLabel: 'Wednesdays at 7 AM',
+    timeout: 45,
+    retry: 0,
+    installs: '1.2K',
+    category: 'maintenance'
+  }
+];
+
+const agents = [
+  'Claude Code', 'Cursor', 'Codex', 'GitHub Copilot', 'Windsurf',
+  'Gemini', 'Cline', 'AMP', 'Roo', 'Goose', 'Kiro CLI',
+  'OpenCode', 'Trae', 'VS Code', 'Antigravity'
+];
+
+// ── Marquee ──
+function renderMarquee() {
+  const track = document.getElementById('marquee');
+  const items = [...agents, ...agents]; // duplicate for seamless loop
+  track.innerHTML = items.map(a =>
+    `<div class="marquee-item"><span class="dot"></span>${a}</div>`
+  ).join('');
+}
+
+// ── Job List ──
+function renderJobs(filter = 'all', search = '') {
+  const list = document.getElementById('jobList');
+  let filtered = jobs;
+
+  if (filter !== 'all') {
+    filtered = filtered.filter(j => j.category === filter);
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(j =>
+      j.name.includes(q) ||
+      j.desc.toLowerCase().includes(q) ||
+      j.tags.some(t => t.includes(q))
+    );
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-tertiary)">No jobs found matching your criteria.</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(j => `
+    <div class="job-card">
+      <div class="job-rank">#${j.rank}</div>
+      <div class="job-info">
+        <div class="job-name">${j.name}</div>
+        <div class="job-desc">${j.desc}</div>
+        <div class="job-meta">
+          <span class="cron-badge" title="${j.cron}">&xcup; ${j.cronLabel}</span>
+          ${j.timeout ? `<span class="timeout-badge">${j.timeout}min</span>` : ''}
+          ${j.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="job-stats">
+        <div class="installs">${j.installs}</div>
+        <div class="installs-label">installs</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Filters ──
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderJobs(tab.dataset.filter, document.getElementById('searchInput').value);
+  });
+});
+
+// ── Search ──
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const activeTab = document.querySelector('.filter-tab.active');
+  renderJobs(activeTab.dataset.filter, e.target.value);
+});
+
+// ── Init ──
+renderMarquee();
+renderJobs();
+</script>
+
+</body>
+</html>
