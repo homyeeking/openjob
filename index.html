@@ -1292,7 +1292,7 @@ function renderJobs() {
     <div class="job-card" data-name="${j.name}">
       <div class="job-rank">#${j.rank}</div>
       <div class="job-info">
-        <div class="job-name">${j.name}</div>
+        <div class="job-name"><a href="job.html?name=${j.name}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">${j.name}</a></div>
         <div class="job-desc">${j.desc}</div>
         <div class="job-meta">
           <span class="cron-badge" title="${j.cron}">&xcup; ${j.cronLabel}</span>
@@ -1307,11 +1307,12 @@ function renderJobs() {
     </div>
   `).join('');
 
-  // Attach click handlers
+  // Attach click handlers - navigate to detail page
   list.querySelectorAll('.job-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const job = jobs.find(j => j.name === card.dataset.name);
-      if (job) openModal(job);
+    card.addEventListener('click', (e) => {
+      // Don't navigate if user is selecting text
+      if (window.getSelection().toString()) return;
+      window.location.href = `job.html?name=${card.dataset.name}`;
     });
   });
 }

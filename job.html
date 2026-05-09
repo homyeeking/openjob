@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Detail - Jobs</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --bg-card-hover: #1a1a1a;
+      --border: #222222;
+      --border-hover: #333333;
+      --text-primary: #ededed;
+      --text-secondary: #888888;
+      --text-tertiary: #555555;
+      --accent: #00d4aa;
+      --accent-dim: #00d4aa22;
+      --accent-text: #00ffcc;
+      --tag-bg: #1a2a25;
+      --tag-text: #00d4aa;
+      --cron-bg: #1a1a2a;
+      --cron-text: #7b8cff;
+      --warn: #ffaa00;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent-text); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700; font-size: 18px;
+      color: var(--text-primary);
+      letter-spacing: 2px;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--text-secondary);
+      font-size: 14px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); text-decoration: none; }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      max-width: 960px; margin: 0 auto;
+      padding: 20px 24px 0;
+      font-size: 14px;
+      color: var(--text-tertiary);
+    }
+    .breadcrumb a { color: var(--text-secondary); }
+    .breadcrumb span { margin: 0 6px; }
+
+    /* ── Layout ── */
+    .detail-layout {
+      max-width: 960px; margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 32px;
+    }
+
+    /* ── Main Content ── */
+    .detail-main { min-width: 0; }
+
+    .detail-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .detail-tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 12px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 13px; font-weight: 500;
+      border-radius: 100px;
+      text-decoration: none;
+    }
+    .tag:hover { text-decoration: none; opacity: 0.85; }
+
+    .install-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .install-block:hover { border-color: var(--accent); }
+    .install-block code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+    .install-block code .prompt { color: var(--accent); }
+    .install-block .copy-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      transition: color 0.2s;
+    }
+    .install-block:hover .copy-label { color: var(--text-secondary); }
+
+    /* ── Rendered JOB.md ── */
+    .job-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .job-content h1 {
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .job-content h2 {
+      font-size: 20px; font-weight: 600;
+      margin: 28px 0 12px;
+      color: var(--text-primary);
+    }
+    .job-content h3 {
+      font-size: 16px; font-weight: 600;
+      margin: 20px 0 8px;
+      color: var(--text-primary);
+    }
+    .job-content p {
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+    .job-content ul, .job-content ol {
+      margin-bottom: 12px;
+      padding-left: 24px;
+      color: var(--text-secondary);
+    }
+    .job-content li { margin-bottom: 6px; }
+    .job-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent-text);
+    }
+    .job-content pre {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    .job-content pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+    .job-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    .job-content th, .job-content td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .job-content th {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .job-content strong { color: var(--text-primary); }
+
+    /* ── Sidebar ── */
+    .detail-sidebar { position: sticky; top: 80px; align-self: start; }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .sidebar-card h3 {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); }
+    .stat-value {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-primary);
+    }
+    .stat-value.cron {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--cron-text);
+    }
+    .stat-value.accent { color: var(--accent-text); }
+    .stat-value.warn { color: var(--warn); }
+
+    .sidebar-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+
+    /* ── Prompt Preview ── */
+    .prompt-preview {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* ── Related Jobs ── */
+    .related-section {
+      max-width: 960px; margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+    .related-section h2 {
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .related-card {
+      display: block;
+      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+    .related-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+      text-decoration: none;
+    }
+    .related-card .rc-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px; font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .related-card .rc-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .related-card .rc-meta {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .related-card .rc-cron {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--cron-bg);
+      color: var(--cron-text);
+      border-radius: 100px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text-primary);
+      color: var(--bg);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      z-index: 300;
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 40px;
+    }
+    .footer-grid {
+      max-width: 960px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 32px;
+    }
+    .footer-col h4 {
+      font-size: 13px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--text-primary); text-decoration: none; }
+    .footer-bottom {
+      max-width: 960px; margin: 32px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+
+    /* ── 404 ── */
+    .not-found {
+      text-align: center;
+      padding: 80px 24px;
+    }
+    .not-found h1 {
+      font-size: 48px; font-weight: 700;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+    .not-found p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .detail-layout {
+        grid-template-columns: 1fr;
+      }
+      .detail-sidebar { position: static; }
+      nav { padding: 12px 20px; }
+      .detail-title { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="index.html" class="nav-brand">JOBS</a>
+  <div class="nav-links">
+    <a href="index.html#leaderboard">Browse</a>
+    <a href="index.html#how-it-works">How It Works</a>
+    <a href="index.html#spec">Spec</a>
+    <a href="https://github.com/HomyeeKing/jobs" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb" id="breadcrumb"></div>
+
+<!-- Detail -->
+<div class="detail-layout" id="detailLayout" style="display:none">
+  <div class="detail-main">
+    <h1 class="detail-title" id="detailTitle"></h1>
+    <div class="detail-tags" id="detailTags"></div>
+    <div class="install-block" id="installBlock">
+      <code id="installCmd"></code>
+      <span class="copy-label">click to copy</span>
+    </div>
+    <div class="job-content" id="jobContent"></div>
+  </div>
+  <div class="detail-sidebar">
+    <div class="sidebar-card">
+      <h3>Metadata</h3>
+      <div id="sidebarStats"></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Agent Prompt Preview</h3>
+      <div class="prompt-preview" id="promptPreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Related -->
+<section class="related-section" id="relatedSection" style="display:none">
+  <h2>More Jobs</h2>
+  <div class="related-grid" id="relatedGrid"></div>
+</section>
+
+<!-- 404 -->
+<div class="not-found" id="notFound" style="display:none">
+  <h1>404</h1>
+  <p>Job not found. It may have been removed or the name is incorrect.</p>
+  <a href="index.html" style="color:var(--accent-text)">&larr; Back to all jobs</a>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>Browse</h4>
+      <a href="index.html#leaderboard">All Jobs</a>
+      <a href="index.html#leaderboard">Automation</a>
+      <a href="index.html#leaderboard">Monitoring</a>
+      <a href="index.html#leaderboard">Maintenance</a>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <a href="spec/jobs-spec.md">Specification</a>
+      <a href="template/JOB.md">Template</a>
+      <a href="jobs/">Example Jobs</a>
+    </div>
+    <div class="footer-col">
+      <h4>Agents</h4>
+      <a href="#">Claude Code</a>
+      <a href="#">Cursor</a>
+      <a href="#">Codex</a>
+      <a href="#">Gemini</a>
+    </div>
+    <div class="footer-col">
+      <h4>Project</h4>
+      <a href="https://github.com/HomyeeKing/jobs">GitHub</a>
+      <a href="https://homyzone.pages.dev/blogs/aigc/jobs-over-skills">Blog Post</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Jobs &mdash; Out of Loop Scheduled Tasks for AI Agents. Open source on GitHub.
+  </div>
+</footer>
+
+<script>
+const jobs = [
+  {
+    name: 'todo-night-executor',
+    desc: 'Automatically discover and execute TODO items in the project during user\'s sleep time.',
+    fullDesc: 'Scans your project for TODO items in code comments, TODO.md files, and README sections. Evaluates complexity and priority, then executes tasks autonomously overnight. Generates a morning execution report with completed tasks, blockers, and suggestions.',
+    tags: ['automation', 'development', 'todo'],
+    cron: '0 0 * * *',
+    cronLabel: 'Daily at midnight',
+    timeout: 360,
+    retry: 1,
+    installs: '12.4K',
+    category: 'automation',
+    allowedSkills: ['commit-push'],
+    condition: 'Check if there are unfinished TODO items in current directory',
+    body: `# Nightly TODO Executor
+
+## Objective
+
+Automatically discover and execute TODO items in the project during user's sleep time, enabling an automated development experience: "Record TODO before sleep, see results when waking up".
+
+## Execution Steps
+
+### Phase 1: Discover TODOs
+
+1. Scan current working directory for TODOs in these forms:
+   - \`TODO.md\` file
+   - TODO section in \`README.md\`
+   - Code comments like \`// TODO:\` or \`/* TODO */\`
+   - Project management files (e.g., \`tasks.md\`, \`backlog.md\`, etc.)
+
+2. Parse and extract TODO items including:
+   - Task description
+   - Priority markers (e.g., \`[P0]\`, \`[high]\`, \`!\`, etc.)
+   - Estimated complexity
+   - Dependencies
+
+### Phase 2: Task Evaluation
+
+Evaluate each extracted TODO:
+
+| Type | Suggested Action |
+|------|------------------|
+| Simple bug fix | Execute automatically |
+| Documentation writing | Execute automatically |
+| Code refactoring | Decide after evaluating complexity |
+| New feature development | Record questions when requirements need clarification |
+| Decision-required questions | Record and wait for user confirmation |
+
+### Phase 3: Task Execution
+
+Execute tasks in priority order:
+
+1. **High priority (P0) tasks**: Execute first
+2. **Medium priority (P1) tasks**: Execute if time permits
+3. **Low priority (P2) tasks**: Execute only after high/medium priority tasks complete
+
+### Phase 4: Result Summary
+
+After execution completes, generate an execution report:
+
+- Completed tasks with change summaries
+- Partially complete / issues encountered
+- Skipped tasks with reasons
+- Suggestions for user review
+
+## Execution Principles
+
+### Safety First
+
+1. **Stop when in doubt**: When encountering uncertain situations, don't guess, record and wait for user confirmation
+2. **Caution with destructive operations**: Operations involving deletion, large-scale refactoring, etc., mark as requiring user confirmation
+3. **Preserve rollback capability**: All changes should have git commits for easy rollback
+
+### Quality Assurance
+
+1. Completed code should follow existing project style
+2. Projects with tests should ensure tests pass
+3. Documentation changes should be clear and accurate`
+  },
+  {
+    name: 'claude-news-collect',
+    desc: 'Collect Claude-related official updates daily and publish to blog.',
+    fullDesc: 'Monitors Anthropic\'s official blog, documentation changelogs, and GitHub releases for new Claude-related content. When updates are found, generates a structured summary article covering new features, improvements, and breaking changes, then publishes to your blog.',
+    tags: ['monitoring', 'claude', 'blog'],
+    cron: '0 10 * * *',
+    cronLabel: 'Daily at 10 AM',
+    timeout: 60,
+    retry: 0,
+    installs: '8.7K',
+    category: 'monitoring',
+    allowedSkills: ['write-to-blog'],
+    condition: 'Check if there are new updates from Claude official channels',
+    body: `# Claude Update Collector
+
+## Objective
+
+Check Claude-related official updates daily. If there is new content, summarize and publish to personal blog.
+
+## Execution Steps
+
+### Phase 1: Information Collection
+
+Check the following sources for new content:
+
+1. **Anthropic Official Blog**
+   - https://www.anthropic.com/news
+   - Look for new articles within the last 24 hours
+
+2. **Claude Documentation Updates**
+   - https://docs.anthropic.com
+   - Check changelogs, release notes
+
+3. **GitHub Releases**
+   - Updates to related SDKs and tools
+
+### Phase 2: Content Summary
+
+If new content is found:
+
+1. Read and understand the updates
+2. Extract key points:
+   - New features
+   - Important improvements
+   - Breaking changes
+   - New APIs or parameters
+
+3. Write a structured summary article including:
+   - Update overview
+   - Detailed explanation of core changes
+   - Practical application scenarios
+   - Migration recommendations (if there are breaking changes)
+
+### Phase 3: Publish
+
+Use \`write-to-blog\` skill to publish the summary article to personal blog.
+
+## Output Requirements
+
+- If updates exist: publish a blog article
+- If no updates: record "No updates today" and exit
+- All execution situations should be logged`
+  },
+  {
+    name: 'npm-global-update',
+    desc: 'Automatically update installed npm global packages every Monday.',
+    fullDesc: 'Keeps your global npm packages current by running weekly updates. Records version lists before and after, flags major version bumps separately, and handles errors gracefully without affecting subsequent package updates.',
+    tags: ['maintenance', 'npm'],
+    cron: '0 9 * * 1',
+    cronLabel: 'Every Monday 9 AM',
+    timeout: 30,
+    retry: 0,
+    installs: '5.2K',
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    body: `# npm Global Dependencies Update
+
+## Objective
+
+Automatically update installed npm global packages every Monday to keep the development environment up to date.
+
+## Execution Steps
+
+1. Check current npm global installation list
+   \`\`\`bash
+   npm list -g --depth=0
+   \`\`\`
+
+2. Execute global update
+   \`\`\`bash
+   npm update -g
+   \`\`\`
+
+3. Verify update results
+   - Run \`npm list -g --depth=0\` again for comparison
+   - Check for any errors
+
+## Output Requirements
+
+Record the following information:
+- Version list before update
+- Version list after update
+- Any warnings or error messages
+
+## Notes
+
+- If certain packages need to stay at specific versions, check and skip them first
+- Record specific errors when update fails, don't affect subsequent execution
+- If there are major version bumps, mark and record them separately`
+  },
+  {
+    name: 'security-audit-weekly',
+    desc: 'Run npm audit and dependency vulnerability checks every week.',
+    fullDesc: 'Performs comprehensive security audits on your project dependencies. Checks for known vulnerabilities, outdated packages with security patches, and generates prioritized reports. Critical issues are flagged for immediate developer attention.',
+    tags: ['security', 'audit', 'npm'],
+    cron: '0 8 * * 1',
+    cronLabel: 'Every Monday 8 AM',
+    timeout: 45,
+    retry: 1,
+    installs: '3.8K',
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    body: `# Security Audit Weekly
+
+## Objective
+
+Run npm audit and dependency vulnerability checks every week. Generate a report and flag critical issues for immediate review.
+
+## Execution Steps
+
+1. Run \`npm audit\` to check for known vulnerabilities
+2. Check for outdated dependencies with \`npm outdated\`
+3. Analyze severity levels (critical, high, moderate, low)
+4. Generate a prioritized security report
+
+## Output Requirements
+
+- List of vulnerabilities sorted by severity
+- Recommended actions for each issue
+- Summary of overall project security health`
+  },
+  {
+    name: 'pr-review-notifier',
+    desc: 'Monitor open pull requests and notify when stale.',
+    fullDesc: 'Tracks open pull requests across your repositories and identifies stale reviews. Sends notifications when PRs have been waiting for review for more than 48 hours, helping teams maintain healthy review cycles and avoid blocked development.',
+    tags: ['monitoring', 'github', 'notifications'],
+    cron: '0 9,17 * * 1-5',
+    cronLabel: 'Weekdays 9 AM & 5 PM',
+    timeout: 20,
+    retry: 0,
+    installs: '2.9K',
+    category: 'monitoring',
+    allowedSkills: [],
+    condition: '',
+    body: `# PR Review Notifier
+
+## Objective
+
+Monitor open pull requests across repositories. Notify the team when PRs are stale for more than 48 hours or need review.
+
+## Execution Steps
+
+1. Fetch open PRs from GitHub API
+2. Calculate time since last review activity
+3. Identify stale PRs (>48 hours without review)
+4. Send notification summary to team
+
+## Output Requirements
+
+- List of stale PRs with age and author
+- Recommended reviewers based on code ownership
+- Summary of review queue health`
+  },
+  {
+    name: 'ci-health-check',
+    desc: 'Check CI/CD pipeline health across all repos.',
+    fullDesc: 'Monitors CI/CD pipeline status across all connected repositories. Detects consecutive failures, broken main branches, and flaky tests. Automatically creates GitHub issues for persistent failures and sends alerts to the responsible team.',
+    tags: ['monitoring', 'ci', 'devops'],
+    cron: '*/30 * * * *',
+    cronLabel: 'Every 30 minutes',
+    timeout: 15,
+    retry: 2,
+    installs: '2.1K',
+    category: 'monitoring',
+    allowedSkills: [],
+    condition: '',
+    body: `# CI Health Check
+
+## Objective
+
+Check CI/CD pipeline health across all repos. Alert on consecutive failures and auto-create issues for broken main branches.
+
+## Execution Steps
+
+1. Check CI status for all connected repositories
+2. Detect consecutive failures on main branch
+3. Auto-create GitHub issues for persistent failures
+4. Send alert notifications to responsible team
+
+## Output Requirements
+
+- Status dashboard for all pipelines
+- List of failing pipelines with failure count
+- Auto-created issue links`
+  },
+  {
+    name: 'changelog-generator',
+    desc: 'Analyze git commits and generate structured changelogs.',
+    fullDesc: 'Automatically generates changelogs by analyzing git commit history since the last release tag. Groups changes by type (features, fixes, breaking changes), drafts release notes in conventional format, and prepares them for team review before publishing.',
+    tags: ['automation', 'git', 'release'],
+    cron: '0 18 * * 5',
+    cronLabel: 'Fridays at 6 PM',
+    timeout: 30,
+    retry: 0,
+    installs: '1.6K',
+    category: 'automation',
+    allowedSkills: [],
+    condition: '',
+    body: `# Changelog Generator
+
+## Objective
+
+Analyze git commits since the last release tag and generate a structured changelog. Draft release notes for review.
+
+## Execution Steps
+
+1. Find the last release tag in git history
+2. Analyze all commits since that tag
+3. Group changes by conventional commit type (feat, fix, breaking, etc.)
+4. Draft structured release notes
+
+## Output Requirements
+
+- Categorized changelog (Features, Fixes, Breaking Changes, etc.)
+- Draft release notes ready for review
+- Statistics (commit count, contributors, files changed)`
+  },
+  {
+    name: 'doc-sync-checker',
+    desc: 'Compare API endpoints in code with documentation.',
+    fullDesc: 'Validates documentation accuracy by comparing API endpoints defined in code against their documentation. Identifies mismatches, missing documentation, outdated examples, and parameter changes. Generates actionable reports for developers.',
+    tags: ['maintenance', 'docs', 'api'],
+    cron: '0 7 * * 3',
+    cronLabel: 'Wednesdays at 7 AM',
+    timeout: 45,
+    retry: 0,
+    installs: '1.2K',
+    category: 'maintenance',
+    allowedSkills: [],
+    condition: '',
+    body: `# Doc Sync Checker
+
+## Objective
+
+Compare API endpoints in code with documentation. Flag mismatches, missing docs, and outdated examples for developers to fix.
+
+## Execution Steps
+
+1. Extract API endpoint definitions from source code
+2. Parse documentation references and examples
+3. Compare parameters, return types, and descriptions
+4. Generate a mismatch report
+
+## Output Requirements
+
+- List of undocumented endpoints
+- List of outdated documentation
+- Parameter mismatch details
+- Recommended fixes for each issue`
+  }
+];
+
+// ── Utils ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+}
+
+// ── Simple Markdown to HTML ──
+function mdToHtml(md) {
+  let html = md
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Tables
+    .replace(/^\|(.+)\|$/gm, (match) => {
+      const cells = match.split('|').filter(c => c.trim());
+      if (cells.every(c => /^[\s-:]+$/.test(c))) return '';
+      const isHeader = false;
+      const tag = 'td';
+      return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    })
+    // Unordered lists
+    .replace(/^   - (.+)$/gm, '<li style="margin-left:20px">$1</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    // Ordered lists
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    // Paragraphs
+    .replace(/\n\n/g, '</p><p>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+
+  // Wrap loose <li> in <ul>
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  // Remove nested <ul><ul>
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+  // Wrap tables
+  html = html.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table>$1</table>');
+  html = html.replace(/<\/table>\s*<table>/g, '');
+
+  return html;
+}
+
+// ── Generate prompt ──
+function generatePrompt(job) {
+  let p = `## Scheduled Job: ${job.name}\n\n${job.fullDesc || job.desc}\n\n`;
+  p += `### Instructions\n\n`;
+  p += `Read and follow the instructions in \`jobs/${job.name}/JOB.md\`.\n\n`;
+  p += `- Respect the timeout: ${job.timeout} minutes\n`;
+  p += `- Retry on failure: ${job.retry} times\n`;
+  p += `- Allowed skills: ${job.allowedSkills.length ? job.allowedSkills.join(', ') : 'all'}\n`;
+  p += `- Condition: ${job.condition || 'none'}\n\n`;
+  p += `Execute the job now.`;
+  return p;
+}
+
+// ── Render ──
+function render() {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name');
+  const job = jobs.find(j => j.name === name);
+
+  if (!job) {
+    document.getElementById('notFound').style.display = 'block';
+    document.title = 'Job Not Found - Jobs';
+    return;
+  }
+
+  document.title = `${job.name} - Jobs`;
+
+  // Breadcrumb
+  document.getElementById('breadcrumb').innerHTML =
+    `<a href="index.html">jobs</a> <span>/</span> <a href="index.html#${job.category}">${job.category}</a> <span>/</span> ${job.name}`;
+
+  // Title
+  document.getElementById('detailTitle').textContent = job.name;
+
+  // Tags
+  document.getElementById('detailTags').innerHTML =
+    job.tags.map(t => `<a class="tag" href="index.html#${t}">${t}</a>`).join('');
+
+  // Install
+  const installCmd = `cjob add HomyeeKing/jobs/${job.name}`;
+  document.getElementById('installCmd').innerHTML =
+    `<span class="prompt">$</span> ${installCmd}`;
+  document.getElementById('installBlock').onclick = () => copyText(installCmd);
+
+  // Content
+  document.getElementById('jobContent').innerHTML = mdToHtml(job.body);
+
+  // Sidebar stats
+  document.getElementById('sidebarStats').innerHTML = `
+    <div class="stat-row"><span class="stat-label">Installs</span><span class="stat-value accent">${job.installs}</span></div>
+    <div class="stat-row"><span class="stat-label">Schedule</span><span class="stat-value cron">${job.cron}</span></div>
+    <div class="stat-row"><span class="stat-label">Frequency</span><span class="stat-value">${job.cronLabel}</span></div>
+    <div class="stat-row"><span class="stat-label">Timeout</span><span class="stat-value">${job.timeout} min</span></div>
+    <div class="stat-row"><span class="stat-label">Retry</span><span class="stat-value">${job.retry}</span></div>
+    <div class="stat-row"><span class="stat-label">Condition</span><span class="stat-value" style="font-size:12px">${job.condition || 'none'}</span></div>
+    <div class="stat-row"><span class="stat-label">Skills</span><span class="stat-value" style="font-size:12px">${job.allowedSkills.length ? job.allowedSkills.join(', ') : 'all'}</span></div>
+    <div class="stat-row"><span class="stat-label">Category</span><span class="stat-value">${job.category}</span></div>
+  `;
+
+  // Prompt preview
+  document.getElementById('promptPreview').textContent = generatePrompt(job);
+
+  // Related jobs (same category, excluding current)
+  const related = jobs.filter(j => j.name !== job.name);
+  document.getElementById('relatedGrid').innerHTML = related.map(j => `
+    <a class="related-card" href="job.html?name=${j.name}">
+      <div class="rc-name">${j.name}</div>
+      <div class="rc-desc">${j.desc}</div>
+      <div class="rc-meta">
+        <span class="rc-cron">${j.cron}</span>
+        <span style="font-size:12px;color:var(--text-tertiary)">${j.installs} installs</span>
+      </div>
+    </a>
+  `).join('');
+
+  document.getElementById('detailLayout').style.display = 'grid';
+  document.getElementById('relatedSection').style.display = 'block';
+}
+
+render();
+</script>
+
+</body>
+</html>
