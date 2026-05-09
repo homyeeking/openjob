@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "jobs": [
+    {
+      "name": "todo-night-executor",
+      "source": "jobs/todo-night-executor/JOB.md",
+      "cron": "0 0 * * *",
+      "description": "Automatically execute TODO tasks from project TODO list every midnight",
+      "condition": "Check if there are unfinished TODO items in current directory",
+      "allowedSkills": [],
+      "timeout": 360,
+      "retry": 1,
+      "tags": [
+        "automation",
+        "development",
+        "todo"
+      ],
+      "enabled": true,
+      "installedAt": "2026-05-09T04:13:06.335Z",
+      "lastRun": null,
+      "lastStatus": null,
+      "runCount": 0
+    },
+    {
+      "name": "claude-news-collect",
+      "source": "jobs/claude-news-collect/JOB.md",
+      "cron": "0 10 * * *",
+      "description": "Collect Claude updates daily, summarize and publish to blog if there are updates",
+      "condition": "Check if there are new updates from Claude official channels",
+      "allowedSkills": [
+        "write-to-blog"
+      ],
+      "timeout": 60,
+      "retry": 0,
+      "tags": [
+        "monitoring",
+        "claude",
+        "blog"
+      ],
+      "enabled": true,
+      "installedAt": "2026-05-09T04:13:12.107Z",
+      "lastRun": null,
+      "lastStatus": null,
+      "runCount": 0
+    },
+    {
+      "name": "npm-global-update",
+      "source": "jobs/npm-global-update/JOB.md",
+      "cron": "0 9 * * 1",
+      "description": "Update npm global dependencies every Monday at 9 AM",
+      "condition": "",
+      "allowedSkills": [],
+      "timeout": 30,
+      "retry": 0,
+      "tags": [
+        "maintenance",
+        "npm"
+      ],
+      "enabled": true,
+      "installedAt": "2026-05-09T04:13:47.596Z",
+      "lastRun": null,
+      "lastStatus": null,
+      "runCount": 0
+    }
+  ]
+}

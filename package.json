@@ -1,0 +1,12 @@
+{
+  "name": "jobs-cli",
+  "version": "1.0.0",
+  "description": "Out of loop scheduled task system for AI agents",
+  "bin": {
+    "cjob": "./bin/cjob"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "cron-parser": "^4.9.0"
+  }
+}

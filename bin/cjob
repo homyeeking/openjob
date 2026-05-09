@@ -1,0 +1,191 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+const { parseJob } = require('../lib/parser');
+const { generatePrompt } = require('../lib/prompt');
+const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs, readRegistry } = require('../lib/registry');
+const { syncToClaude } = require('../lib/sync');
+
+const C = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+};
+
+const args = process.argv.slice(2);
+const cmd = args[0];
+
+function printUsage() {
+  console.log(`
+${C.bold}cjob${C.reset} - Scheduled task system for AI agents
+
+${C.bold}USAGE${C.reset}
+  cjob <command> [options]
+
+${C.bold}COMMANDS${C.reset}
+  ${C.cyan}init${C.reset}                Initialize the jobs registry
+  ${C.cyan}add${C.reset} <path>          Add a job from a JOB.md file or directory
+  ${C.cyan}remove${C.reset} <name>       Remove a job by name
+  ${C.cyan}list${C.reset}                List all registered jobs
+  ${C.cyan}enable${C.reset} <name>       Enable a job
+  ${C.cyan}disable${C.reset} <name>      Disable a job
+  ${C.cyan}sync${C.reset}                Sync enabled jobs to Claude scheduled_tasks.json
+  ${C.cyan}run${C.reset} <name>          Print the prompt for a job (for manual execution)
+  ${C.cyan}--help${C.reset}              Show this help message
+`);
+}
+
+function formatTable(jobs) {
+  if (jobs.length === 0) {
+    console.log(`  ${C.dim}No jobs registered.${C.reset}`);
+    return;
+  }
+
+  const nameWidth = Math.max(4, ...jobs.map(j => j.name.length));
+  const cronWidth = Math.max(4, ...jobs.map(j => j.cron.length));
+  const statusWidth = 6;
+
+  const header = `${'NAME'.padEnd(nameWidth)}  ${'CRON'.padEnd(cronWidth)}  ${'STATUS'.padEnd(statusWidth)}  DESCRIPTION`;
+  const divider = '-'.repeat(header.length);
+
+  console.log(`  ${C.bold}${header}${C.reset}`);
+  console.log(`  ${C.dim}${divider}${C.reset}`);
+
+  for (const job of jobs) {
+    const statusColor = job.enabled ? C.green : C.red;
+    const status = job.enabled ? 'on' : 'off';
+    console.log(`  ${job.name.padEnd(nameWidth)}  ${job.cron.padEnd(cronWidth)}  ${statusColor}${status.padEnd(statusWidth + C.green.length + C.reset.length - statusColor.length - C.reset.length)}${C.reset}  ${job.description}`);
+  }
+}
+
+try {
+  switch (cmd) {
+    case 'init': {
+      const registry = initRegistry();
+      console.log(`${C.green}Initialized jobs registry${C.reset} at .agents/jobs.json`);
+      console.log(`  ${registry.jobs.length} jobs`);
+      break;
+    }
+
+    case 'add': {
+      let filePath = args[1];
+      if (!filePath) {
+        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: cjob add <path>`);
+        process.exit(1);
+      }
+      // If path is a directory, append JOB.md
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+        filePath = path.join(filePath, 'JOB.md');
+      }
+      const job = parseJob(filePath);
+      addJob(job);
+      console.log(`${C.green}Added job:${C.reset} ${job.name}`);
+      console.log(`  cron: ${job.cron}`);
+      console.log(`  source: ${job.source}`);
+      // Auto-sync after adding
+      const registry = readRegistry();
+      const result = syncToClaude(registry);
+      console.log(`${C.blue}Synced${C.reset} ${result.synced} jobs to Claude`);
+      break;
+    }
+
+    case 'remove': {
+      const name = args[1];
+      if (!name) {
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob remove <name>`);
+        process.exit(1);
+      }
+      removeJob(name);
+      console.log(`${C.green}Removed job:${C.reset} ${name}`);
+      // Auto-sync after removing
+      const registry = readRegistry();
+      const result = syncToClaude(registry);
+      console.log(`${C.blue}Synced${C.reset} ${result.synced} jobs to Claude`);
+      break;
+    }
+
+    case 'list': {
+      const jobs = listJobs();
+      console.log(`\n${C.bold}Registered Jobs${C.reset} (${jobs.length})\n`);
+      formatTable(jobs);
+      console.log();
+      break;
+    }
+
+    case 'enable': {
+      const name = args[1];
+      if (!name) {
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob enable <name>`);
+        process.exit(1);
+      }
+      enableJob(name);
+      console.log(`${C.green}Enabled job:${C.reset} ${name}`);
+      const registry = readRegistry();
+      syncToClaude(registry);
+      break;
+    }
+
+    case 'disable': {
+      const name = args[1];
+      if (!name) {
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob disable <name>`);
+        process.exit(1);
+      }
+      disableJob(name);
+      console.log(`${C.yellow}Disabled job:${C.reset} ${name}`);
+      const registry = readRegistry();
+      syncToClaude(registry);
+      break;
+    }
+
+    case 'sync': {
+      const registry = readRegistry();
+      const result = syncToClaude(registry);
+      console.log(`${C.green}Synced${C.reset} ${result.synced} enabled jobs to Claude`);
+      if (result.removed > 0) {
+        console.log(`  ${C.dim}Removed ${result.removed} stale job(s) from Claude${C.reset}`);
+      }
+      break;
+    }
+
+    case 'run': {
+      const name = args[1];
+      if (!name) {
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob run <name>`);
+        process.exit(1);
+      }
+      const job = getJob(name);
+      if (!job) {
+        console.error(`${C.red}Error:${C.reset} Job "${name}" not found`);
+        process.exit(1);
+      }
+      const prompt = generatePrompt(job);
+      console.log(prompt);
+      break;
+    }
+
+    case '--help':
+    case '-h':
+    case 'help':
+      printUsage();
+      break;
+
+    case undefined:
+      printUsage();
+      break;
+
+    default:
+      console.error(`${C.red}Unknown command:${C.reset} ${cmd}`);
+      console.error(`Run ${C.bold}cjob --help${C.reset} for usage.`);
+      process.exit(1);
+  }
+} catch (err) {
+  console.error(`${C.red}Error:${C.reset} ${err.message}`);
+  process.exit(1);
+}
