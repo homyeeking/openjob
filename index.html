@@ -750,9 +750,9 @@
   </div>
   <h1>The Open Agent Jobs Ecosystem</h1>
   <p>Scheduled tasks that run outside the Agent Loop. Let AI work for you while you sleep &mdash; cron-powered, condition-driven, fully autonomous.</p>
-  <div class="install-cmd" onclick="navigator.clipboard.writeText('npx jobs add <owner/repo>')">
+  <div class="install-cmd" onclick="navigator.clipboard.writeText('cjob add <owner/repo>')">
     <span class="prompt">$</span>
-    <span>npx jobs add &lt;owner/repo&gt;</span>
+    <span>cjob add &lt;owner/repo&gt;</span>
     <span class="copy-hint">click to copy</span>
   </div>
 </section>
@@ -1216,14 +1216,14 @@ function openModal(job) {
     </div>
     <div class="detail-section">
       <div class="detail-label">Install</div>
-      <div class="detail-code">npx jobs add HomyeeKing/jobs/${job.name}</div>
+      <div class="detail-code">cjob add HomyeeKing/jobs/${job.name}</div>
     </div>
   `;
 
   const footer = document.getElementById('modalFooter');
   footer.innerHTML = `
-    <div class="install-inline" onclick="copyText('npx jobs add HomyeeKing/jobs/${job.name}')">
-      <span class="prompt">$</span> npx jobs add ... <span style="color:var(--text-tertiary);font-size:11px;font-family:Inter">copy</span>
+    <div class="install-inline" onclick="copyText('cjob add HomyeeKing/jobs/${job.name}')">
+      <span class="prompt">$</span> cjob add ... <span style="color:var(--text-tertiary);font-size:11px;font-family:Inter">copy</span>
     </div>
     <a href="jobs/${job.name}/JOB.md" class="btn">View Source</a>
   `;
