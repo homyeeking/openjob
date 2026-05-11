@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { parseJob } = require('../lib/parser');
 const { generatePrompt } = require('../lib/prompt');
-const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs, readRegistry } = require('../lib/registry');
+const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs, readRegistry, REGISTRY_PATH, JOBS_DIR } = require('../lib/registry');
 const { syncToClaude } = require('../lib/sync');
 
 const C = {
@@ -29,8 +29,8 @@ ${C.bold}USAGE${C.reset}
   cjob <command> [options]
 
 ${C.bold}COMMANDS${C.reset}
-  ${C.cyan}init${C.reset}                Initialize the jobs registry
-  ${C.cyan}add${C.reset} <path>          Add a job from a JOB.md file or directory
+  ${C.cyan}init${C.reset}                Initialize the global jobs registry
+  ${C.cyan}add${C.reset} <path>          Install a job from a JOB.md file or directory
   ${C.cyan}remove${C.reset} <name>       Remove a job by name
   ${C.cyan}list${C.reset}                List all registered jobs
   ${C.cyan}enable${C.reset} <name>       Enable a job
@@ -68,7 +68,8 @@ try {
   switch (cmd) {
     case 'init': {
       const registry = initRegistry();
-      console.log(`${C.green}Initialized jobs registry${C.reset} at .agents/jobs.json`);
+      console.log(`${C.green}Initialized global jobs registry${C.reset} at ${REGISTRY_PATH}`);
+      console.log(`  jobs dir: ${JOBS_DIR}`);
       console.log(`  ${registry.jobs.length} jobs`);
       break;
     }
@@ -84,10 +85,11 @@ try {
         filePath = path.join(filePath, 'JOB.md');
       }
       const job = parseJob(filePath);
-      addJob(job);
+      const entry = addJob(job);
       console.log(`${C.green}Added job:${C.reset} ${job.name}`);
       console.log(`  cron: ${job.cron}`);
-      console.log(`  source: ${job.source}`);
+      console.log(`  source: ${entry.source}`);
+      console.log(`  original: ${entry.originalSource}`);
       // Auto-sync after adding
       const registry = readRegistry();
       const result = syncToClaude(registry);
