@@ -23,10 +23,10 @@ const cmd = args[0];
 
 function printUsage() {
   console.log(`
-${C.bold}cjob${C.reset} - Scheduled task system for AI agents
+${C.bold}jobs${C.reset} - Scheduled task system for AI agents
 
 ${C.bold}USAGE${C.reset}
-  cjob <command> [options]
+  jobs <command> [options]
 
 ${C.bold}COMMANDS${C.reset}
   ${C.cyan}init${C.reset}                Initialize the global jobs registry
@@ -77,7 +77,7 @@ try {
     case 'add': {
       let filePath = args[1];
       if (!filePath) {
-        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: cjob add <path>`);
+        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: jobs add <path>`);
         process.exit(1);
       }
       // If path is a directory, append JOB.md
@@ -100,7 +100,7 @@ try {
     case 'remove': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob remove <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs remove <name>`);
         process.exit(1);
       }
       removeJob(name);
@@ -123,7 +123,7 @@ try {
     case 'enable': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob enable <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs enable <name>`);
         process.exit(1);
       }
       enableJob(name);
@@ -136,7 +136,7 @@ try {
     case 'disable': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob disable <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs disable <name>`);
         process.exit(1);
       }
       disableJob(name);
@@ -159,7 +159,7 @@ try {
     case 'run': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: cjob run <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs run <name>`);
         process.exit(1);
       }
       const job = getJob(name);
@@ -184,7 +184,7 @@ try {
 
     default:
       console.error(`${C.red}Unknown command:${C.reset} ${cmd}`);
-      console.error(`Run ${C.bold}cjob --help${C.reset} for usage.`);
+      console.error(`Run ${C.bold}jobs --help${C.reset} for usage.`);
       process.exit(1);
   }
 } catch (err) {

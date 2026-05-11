@@ -3,7 +3,7 @@
 When this skill is triggered:
 
 1. Read `~/.agents/jobs.json`
-2. If file doesn't exist, tell the user to run `cjob init` first
+2. If file doesn't exist, tell the user to run `jobs init` first
 3. Display all jobs in a formatted table:
    - Name, Cron, Enabled status, Last run, Run count
 4. If user asks to sync:

@@ -1,9 +1,17 @@
 {
-  "name": "jobs-cli",
+  "name": "@homy/jobs",
   "version": "1.0.0",
   "description": "Out of loop scheduled task system for AI agents",
+  "packageManager": "pnpm@10.33.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "bin/",
+    "lib/"
+  ],
   "bin": {
-    "cjob": "./bin/cjob"
+    "jobs": "bin/jobs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

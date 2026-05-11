@@ -1,17 +1,17 @@
 ---
 name: job-creator
-description: Create a global scheduled Job by turning a user automation request into ~/.agents/jobs/<name>/JOB.md and optionally registering it with the cjob CLI.
+description: Create a global scheduled Job by turning a user automation request into ~/.agents/jobs/<name>/JOB.md and optionally registering it with the jobs CLI.
 triggers:
   - "create job"
   - "new job"
   - "job creator"
   - "generate JOB.md"
-  - "cjob create"
+  - "job create"
 ---
 
 # Job Creator
 
-Create a schedulable global Job that matches the repository Jobs specification and the current `cjob` CLI.
+Create a schedulable global Job that matches the repository Jobs specification and the current `jobs` CLI.
 
 ## Workflow
 
@@ -25,9 +25,9 @@ Create a schedulable global Job that matches the repository Jobs specification a
    - Required frontmatter: `name`, `cron`, `description`.
    - Optional frontmatter: `condition`, `allowedSkills`, `timeout`, `retry`, `tags`.
 4. Validate through the CLI path whenever possible.
-   - Run `node bin/cjob add ~/.agents/jobs/<job-name>` only if the user wants the job registered now.
-   - If `~/.agents/jobs.json` is missing and registration is requested, run `node bin/cjob init` first.
-   - `cjob add` is the source of truth for parsing and cron validation.
+   - Run `node cli/bin/jobs add ~/.agents/jobs/<job-name>` only if the user wants the job registered now.
+   - If `~/.agents/jobs.json` is missing and registration is requested, run `node cli/bin/jobs init` first.
+   - `jobs add` is the source of truth for parsing and cron validation.
 5. Report the file path, schedule, registration status, and any known gaps.
 
 ## Field Guidance
@@ -90,13 +90,13 @@ Keep side effects scoped to the task described in this job.
 
 ## CLI Alignment
 
-The current `cjob` CLI supports:
+The current `jobs` CLI supports:
 
-- `cjob init`: create `~/.agents/jobs.json` and `~/.agents/jobs/`.
-- `cjob add <path>`: parse `JOB.md`, copy it to `~/.agents/jobs/<name>/JOB.md`, register the job globally, and sync enabled jobs to Claude scheduled tasks.
-- `cjob list`: display registered jobs.
-- `cjob run <name>`: print the prompt for manual execution.
-- `cjob enable|disable|remove <name>`: update registry state and sync.
-- `cjob sync`: sync enabled registry entries to Claude scheduled tasks.
+- `jobs init`: create `~/.agents/jobs.json` and `~/.agents/jobs/`.
+- `jobs add <path>`: parse `JOB.md`, copy it to `~/.agents/jobs/<name>/JOB.md`, register the job globally, and sync enabled jobs to Claude scheduled tasks.
+- `jobs list`: display registered jobs.
+- `jobs run <name>`: print the prompt for manual execution.
+- `jobs enable|disable|remove <name>`: update registry state and sync.
+- `jobs sync`: sync enabled registry entries to Claude scheduled tasks.
 
-Prefer `node bin/cjob ...` inside this repository unless `cjob` is known to be installed globally.
+Prefer `node cli/bin/jobs ...` inside this repository unless `jobs` is known to be installed globally.

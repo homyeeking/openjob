@@ -940,7 +940,7 @@ function render() {
     job.tags.map(t => `<a class="tag" href="index.html#${t}">${t}</a>`).join('');
 
   // Install
-  const installCmd = `cjob add HomyeeKing/jobs/${job.name}`;
+  const installCmd = `jobs add HomyeeKing/jobs/${job.name}`;
   document.getElementById('installCmd').innerHTML =
     `<span class="prompt">$</span> ${installCmd}`;
   document.getElementById('installBlock').onclick = () => copyText(installCmd);
