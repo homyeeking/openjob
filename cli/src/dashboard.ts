@@ -48,10 +48,10 @@ function htmlPage(machineId: string): string {
     .running { color:var(--accent); }
     .missed, .skipped { color:var(--warn); }
     .idle { color:var(--muted); }
-    .daemon-running { color:var(--ok); }
-    .daemon-starting { color:var(--accent); }
-    .daemon-degraded { color:var(--warn); }
-    .daemon-stopped { color:var(--err); }
+    .metric strong.daemon-running { color:var(--ok); }
+    .metric strong.daemon-starting { color:var(--accent); }
+    .metric strong.daemon-degraded { color:var(--warn); }
+    .metric strong.daemon-stopped { color:var(--err); }
     .actions { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
     button { background:#13203a; color:var(--text); border:1px solid #27406b; border-radius:10px; padding:10px 14px; cursor:pointer; }
     button:hover { border-color:var(--accent); }
@@ -112,7 +112,7 @@ function htmlPage(machineId: string): string {
     function formatHistoryEntry(item) {
       const time = formatDateTime(item.finishedAt || item.startedAt || '');
       const reason = item.exitReason ? ' ' + item.exitReason : '';
-      return '[' + item.status + '] ' + time + reason + '\n' + (item.stderr || item.stdout || '');
+      return '[' + item.status + '] ' + time + reason + '\\\\n' + (item.stderr || item.stdout || '');
     }
     async function trigger(name, action) {
       await api('/api/jobs/' + encodeURIComponent(name) + '/' + action, { method:'POST' });
