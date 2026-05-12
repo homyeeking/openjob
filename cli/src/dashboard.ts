@@ -48,6 +48,10 @@ function htmlPage(machineId: string): string {
     .running { color:var(--accent); }
     .missed, .skipped { color:var(--warn); }
     .idle { color:var(--muted); }
+    .daemon-running { color:var(--ok); }
+    .daemon-starting { color:var(--accent); }
+    .daemon-degraded { color:var(--warn); }
+    .daemon-stopped { color:var(--err); }
     .actions { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
     button { background:#13203a; color:var(--text); border:1px solid #27406b; border-radius:10px; padding:10px 14px; cursor:pointer; }
     button:hover { border-color:var(--accent); }
@@ -76,6 +80,9 @@ function htmlPage(machineId: string): string {
     }
     function esc(v) { return (v ?? '').toString().replace(/[&<>]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[s])); }
     function statusClass(status) { return ['success','failed','running','missed','skipped','idle'].includes(status) ? status : 'idle'; }
+    function daemonStatusClass(status) {
+      return ['running', 'starting', 'degraded', 'stopped'].includes(status) ? 'daemon-' + status : '';
+    }
     const userTimeZone = (() => {
       try {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
@@ -114,11 +121,12 @@ function htmlPage(machineId: string): string {
     async function loadAll() {
       const data = await api('/api/overview');
       const metrics = document.getElementById('metrics');
+      const daemonStatus = data.daemon.status || 'unknown';
       metrics.innerHTML = (
         '<div class="card metric">任务总数<strong>' + data.jobs.length + '</strong></div>' +
         '<div class="card metric">已启用<strong>' + data.jobs.filter(j => j.enabled).length + '</strong></div>' +
         '<div class="card metric">失败/错过<strong>' + data.jobs.filter(j => ['failed','missed'].includes(j.lastStatus)).length + '</strong></div>' +
-        '<div class="card metric">daemon<strong>' + esc(data.daemon.status || 'unknown') + '</strong></div>');
+        '<div class="card metric">daemon<strong class="' + daemonStatusClass(daemonStatus) + '">' + esc(daemonStatus) + '</strong></div>');
 
       const machineEl = document.getElementById('machineId');
       if (machineEl) machineEl.textContent = '机器: ' + esc(data.machineId || '-');
