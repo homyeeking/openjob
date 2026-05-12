@@ -98,8 +98,8 @@ async function main() {
       const registry = initRegistry();
       ensureRegistryState();
       console.log(`${C.green}Initialized global jobs registry${C.reset} at ${REGISTRY_PATH}`);
-      console.log(`  jobs dir: ${JOBS_DIR}`);
-      console.log(`  ${registry.jobs.length} jobs`);
+      console.log(`jobs dir: ${JOBS_DIR}`);
+      console.log(`${registry.jobs.length} jobs`);
       break;
     }
 
@@ -117,9 +117,9 @@ async function main() {
       const entry = addJob(job);
       ensureRegistryState();
       console.log(`${C.green}Added job:${C.reset} ${job.name}`);
-      console.log(`  cron: ${job.cron}`);
-      console.log(`  source: ${entry.source}`);
-      console.log(`  original: ${entry.originalSource}`);
+      console.log(`cron: ${job.cron}`);
+      console.log(`source: ${entry.source}`);
+      console.log(`original: ${entry.originalSource}`);
       // Auto-sync after adding
       const registry = readRegistry();
       const result = syncToClaude(registry);
@@ -156,10 +156,10 @@ async function main() {
       const daemon = readDaemonState();
       const jobs = summarizeJobs();
       console.log(`\n${C.bold}Daemon${C.reset}`);
-      console.log(`  status: ${daemon.status}`);
-      console.log(`  pid: ${daemon.pid || '-'}`);
-      console.log(`  heartbeat: ${daemon.heartbeatAt || '-'}`);
-      console.log(`  wake gap: ${daemon.lastWakeGapMs || 0}ms`);
+      console.log(`status: ${daemon.status}`);
+      console.log(`pid: ${daemon.pid || '-'}`);
+      console.log(`heartbeat: ${daemon.heartbeatAt || '-'}`);
+      console.log(`wake gap: ${daemon.lastWakeGapMs || 0}ms`);
       console.log(`\n${C.bold}Jobs Runtime${C.reset}\n`);
       formatStatusTable(jobs);
       console.log();
@@ -197,7 +197,7 @@ async function main() {
       const result = syncToClaude(registry);
       console.log(`${C.green}Synced${C.reset} ${result.synced} enabled jobs to Claude`);
       if (result.removed > 0) {
-        console.log(`  ${C.dim}Removed ${result.removed} stale job(s) from Claude${C.reset}`);
+        console.log(`${C.dim}Removed ${result.removed} stale job(s) from Claude${C.reset}`);
       }
       break;
     }
@@ -216,11 +216,11 @@ async function main() {
       ensureRegistryState();
       const result = await executeJob(job, 'manual');
       console.log(`${C.green}${result.status.toUpperCase()}${C.reset} ${name}`);
-      console.log(`  started: ${result.startedAt}`);
-      console.log(`  finished: ${result.finishedAt}`);
-      console.log(`  exit: ${result.exitReason}`);
-      if (result.stderr) console.log(`  stderr: ${result.stderr.trim().slice(0, 400)}`);
-      else if (result.stdout) console.log(`  stdout: ${result.stdout.trim().slice(0, 400)}`);
+      console.log(`started: ${result.startedAt}`);
+      console.log(`finished: ${result.finishedAt}`);
+      console.log(`exit: ${result.exitReason}`);
+      if (result.stderr) console.log(`stderr: ${result.stderr.trim().slice(0, 400)}`);
+      else if (result.stdout) console.log(`stdout: ${result.stdout.trim().slice(0, 400)}`);
       break;
     }
 
@@ -230,7 +230,7 @@ async function main() {
       if (action === 'start') {
         const state = startDaemon();
         console.log(`${C.green}Daemon${C.reset} ${state.status}`);
-        console.log(`  pid: ${state.pid || '-'}`);
+        console.log(`pid: ${state.pid || '-'}`);
         break;
       }
       if (action === 'stop') {
@@ -242,11 +242,11 @@ async function main() {
         const state = readDaemonState();
         const alive = state.pid ? isProcessAlive(state.pid) : false;
         console.log(`${C.bold}Daemon Status${C.reset}`);
-        console.log(`  status: ${state.status}`);
-        console.log(`  pid: ${state.pid || '-'}`);
-        console.log(`  alive: ${alive ? 'yes' : 'no'}`);
-        console.log(`  startedAt: ${state.startedAt || '-'}`);
-        console.log(`  heartbeatAt: ${state.heartbeatAt || '-'}`);
+        console.log(`status: ${state.status}`);
+        console.log(`pid: ${state.pid || '-'}`);
+        console.log(`alive: ${alive ? 'yes' : 'no'}`);
+        console.log(`startedAt: ${state.startedAt || '-'}`);
+        console.log(`heartbeatAt: ${state.heartbeatAt || '-'}`);
         break;
       }
       if (action === 'run') {

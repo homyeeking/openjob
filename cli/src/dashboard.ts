@@ -76,6 +76,37 @@ function htmlPage(machineId: string): string {
     }
     function esc(v) { return (v ?? '').toString().replace(/[&<>]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[s])); }
     function statusClass(status) { return ['success','failed','running','missed','skipped','idle'].includes(status) ? status : 'idle'; }
+    const userTimeZone = (() => {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
+      } catch {
+        return 'local';
+      }
+    })();
+    function formatDateTime(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      try {
+        return new Intl.DateTimeFormat(undefined, {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZoneName: 'short'
+        }).format(date);
+      } catch {
+        return date.toLocaleString();
+      }
+    }
+    function formatHistoryEntry(item) {
+      const time = formatDateTime(item.finishedAt || item.startedAt || '');
+      const reason = item.exitReason ? ' ' + item.exitReason : '';
+      return '[' + item.status + '] ' + time + reason + '\n' + (item.stderr || item.stdout || '');
+    }
     async function trigger(name, action) {
       await api('/api/jobs/' + encodeURIComponent(name) + '/' + action, { method:'POST' });
       await loadAll();
@@ -104,15 +135,15 @@ function htmlPage(machineId: string): string {
           '</div>' +
           '<div class="meta">' +
             '<div><span>cron</span>' + esc(job.cron) + '</div>' +
-            '<div><span>下次执行</span>' + esc(job.nextRun || '-') + '</div>' +
-            '<div><span>上次执行</span>' + esc(job.lastRun || '-') + '</div>' +
+            '<div><span>下次执行（' + esc(userTimeZone) + '）</span>' + esc(formatDateTime(job.nextRun)) + '</div>' +
+            '<div><span>上次执行（' + esc(userTimeZone) + '）</span>' + esc(formatDateTime(job.lastRun)) + '</div>' +
             '<div><span>失败原因</span>' + esc(job.lastError || job.lastExitReason || '-') + '</div>' +
           '</div>' +
           '<div class="actions">' +
             '<button onclick="trigger(\\'' + esc(job.name) + '\\',\\'run\\')">立即执行</button>' +
             '<button onclick="trigger(\\'' + esc(job.name) + '\\',\\'' + (job.enabled ? 'disable' : 'enable') + '\\')">' + (job.enabled ? '禁用' : '启用') + '</button>' +
           '</div>' +
-          '<pre>' + esc((job.history || []).slice(-3).map(item => '[' + item.status + '] ' + item.finishedAt + ' ' + (item.exitReason || '') + '\\n' + (item.stderr || item.stdout || '')).join('\\n\\n') || '暂无执行记录') + '</pre>' +
+          '<pre>' + esc((job.history || []).slice(-3).map(formatHistoryEntry).join('\\n\\n') || '暂无执行记录') + '</pre>' +
         '</section>')).join('');
     }
     loadAll();

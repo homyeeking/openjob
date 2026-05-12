@@ -411,7 +411,7 @@
     <a href="index.html#leaderboard">Browse</a>
     <a href="index.html#how-it-works">How It Works</a>
     <a href="index.html#spec">Spec</a>
-    <a href="https://github.com/HomyeeKing/jobs" target="_blank">GitHub</a>
+    <a href="https://github.com/HomyeeKing/openjob" target="_blank">GitHub</a>
   </div>
 </nav>
 
@@ -482,7 +482,7 @@
     </div>
     <div class="footer-col">
       <h4>Project</h4>
-      <a href="https://github.com/HomyeeKing/jobs">GitHub</a>
+      <a href="https://github.com/HomyeeKing/openjob">GitHub</a>
       <a href="https://homyzone.pages.dev/blogs/aigc/jobs-over-skills">Blog Post</a>
     </div>
   </div>
@@ -940,7 +940,7 @@ function render() {
     job.tags.map(t => `<a class="tag" href="index.html#${t}">${t}</a>`).join('');
 
   // Install
-  const installCmd = `jobs add HomyeeKing/jobs/${job.name}`;
+  const installCmd = `openjob add HomyeeKing/openjob/${job.name}`;
   document.getElementById('installCmd').innerHTML =
     `<span class="prompt">$</span> ${installCmd}`;
   document.getElementById('installBlock').onclick = () => copyText(installCmd);

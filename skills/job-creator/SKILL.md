@@ -25,8 +25,8 @@ Create a schedulable global Job that matches the repository Jobs specification a
    - Required frontmatter: `name`, `cron`, `description`.
    - Optional frontmatter: `condition`, `allowedSkills`, `timeout`, `retry`, `tags`.
 4. Validate through the CLI path whenever possible.
-   - Run `node cli/bin/jobs add ~/.agents/jobs/<job-name>` only if the user wants the job registered now.
-   - If `~/.agents/jobs.json` is missing and registration is requested, run `node cli/bin/jobs init` first.
+   - Run `node cli/bin/openjob add ~/.agents/jobs/<job-name>` only if the user wants the job registered now.
+   - If `~/.agents/jobs.json` is missing and registration is requested, run `node cli/bin/openjob init` first.
    - `jobs add` is the source of truth for parsing and cron validation.
 5. Report the file path, schedule, registration status, and any known gaps.
 
@@ -99,4 +99,4 @@ The current `jobs` CLI supports:
 - `jobs enable|disable|remove <name>`: update registry state and sync.
 - `jobs sync`: sync enabled registry entries to Claude scheduled tasks.
 
-Prefer `node cli/bin/jobs ...` inside this repository unless `jobs` is known to be installed globally.
+Prefer `node cli/bin/openjob ...` inside this repository unless `openjob` is known to be installed globally.

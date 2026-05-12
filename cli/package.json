@@ -8,7 +8,7 @@
     "lib/"
   ],
   "bin": {
-    "openjob": "bin/jobs"
+    "openjob": "bin/openjob"
   },
   "scripts": {
     "build": "tsc",
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HomyeeKing/jobs.git",
+    "url": "git+https://github.com/HomyeeKing/openjob.git",
     "directory": "cli"
   },
-  "homepage": "https://github.com/HomyeeKing/jobs/tree/master/cli",
+  "homepage": "https://github.com/HomyeeKing/openjob/tree/master/cli",
   "bugs": {
-    "url": "https://github.com/HomyeeKing/jobs/issues"
+    "url": "https://github.com/HomyeeKing/openjob/issues"
   },
   "dependencies": {
     "cron-parser": "^4.9.0",
