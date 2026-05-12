@@ -60,16 +60,16 @@ Write your instructions here that Claude will follow when this job triggers.
 Then register it:
 
 ```bash
-jobs init
-jobs add ~/.agents/jobs/my-first-job
+npx @homy/jobs@latest init
+npx @homy/jobs@latest add ~/.agents/jobs/my-first-job
 ```
 
-`jobs add` stores Jobs in the global registry at `~/.agents/jobs.json`, keeps the executable `JOB.md` under `~/.agents/jobs/<name>/JOB.md`, and syncs enabled Jobs to Claude scheduled tasks.
+`npx @homy/jobs@latest add` stores Jobs in the global registry at `~/.agents/jobs.json`, keeps the executable `JOB.md` under `~/.agents/jobs/<name>/JOB.md`, and syncs enabled Jobs to Claude scheduled tasks.
 
 Repository examples under `jobs/` are marketplace/source templates. Installing one copies it into the global Jobs directory:
 
 ```bash
-jobs add jobs/todo-night-executor
+npx @homy/jobs@latest add jobs/todo-night-executor
 ```
 
 ### 2. Core Fields

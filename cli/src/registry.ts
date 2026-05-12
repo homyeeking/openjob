@@ -1,19 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
+import { Registry, Job } from './types';
 
-const AGENTS_DIR = path.join(process.env.HOME || process.cwd(), '.agents');
-const JOBS_DIR = path.join(AGENTS_DIR, 'jobs');
-const REGISTRY_PATH = path.join(AGENTS_DIR, 'jobs.json');
+export const AGENTS_DIR = path.join(process.env.HOME || process.cwd(), '.agents');
+export const JOBS_DIR = path.join(AGENTS_DIR, 'jobs');
+export const REGISTRY_PATH = path.join(AGENTS_DIR, 'jobs.json');
 
-function jobDir(name) {
+export function jobDir(name: string): string {
   return path.join(JOBS_DIR, name);
 }
 
-function jobFile(name) {
+export function jobFile(name: string): string {
   return path.join(jobDir(name), 'JOB.md');
 }
 
-function initRegistry() {
+export function initRegistry(): Registry {
   const dir = path.dirname(REGISTRY_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   if (!fs.existsSync(JOBS_DIR)) fs.mkdirSync(JOBS_DIR, { recursive: true });
@@ -23,19 +24,19 @@ function initRegistry() {
   return readRegistry();
 }
 
-function readRegistry() {
+export function readRegistry(): Registry {
   if (!fs.existsSync(REGISTRY_PATH)) return { version: '1.0.0', jobs: [] };
-  return JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
+  return JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8')) as Registry;
 }
 
-function writeRegistry(registry) {
+export function writeRegistry(registry: Registry): void {
   const dir = path.dirname(REGISTRY_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   if (!fs.existsSync(JOBS_DIR)) fs.mkdirSync(JOBS_DIR, { recursive: true });
   fs.writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2));
 }
 
-function addJob(job) {
+export function addJob(job: Partial<Job> & { name: string; source: string; sourcePath: string }): Job {
   initRegistry();
   const sourcePath = job.sourcePath || job.source;
   if (!sourcePath || !fs.existsSync(sourcePath)) {
@@ -51,22 +52,35 @@ function addJob(job) {
 
   const registry = readRegistry();
   const existing = registry.jobs.findIndex(j => j.name === job.name);
-  const entry = {
+  const entry: Job = {
     name: job.name,
     source: targetFile,
     originalSource: sourcePath,
-    cron: job.cron,
-    description: job.description,
+    sourcePath: targetFile,
+    cron: job.cron || '',
+    description: job.description || '',
     condition: job.condition || '',
     allowedSkills: job.allowedSkills || [],
     timeout: job.timeout || 60,
     retry: job.retry || 0,
     tags: job.tags || [],
+    command: job.command || '',
+    cwd: job.cwd || '',
     enabled: true,
     installedAt: new Date().toISOString(),
     lastRun: null,
-    lastStatus: null,
-    runCount: 0
+    lastStartedAt: null,
+    lastFinishedAt: null,
+    lastSuccessAt: null,
+    lastFailureAt: null,
+    nextRun: null,
+    lastStatus: 'idle',
+    lastError: null,
+    lastExitReason: null,
+    runCount: 0,
+    consecutiveFailures: 0,
+    history: [],
+    pid: null
   };
   if (existing >= 0) {
     registry.jobs[existing] = entry;
@@ -77,14 +91,14 @@ function addJob(job) {
   return entry;
 }
 
-function removeJob(name) {
+export function removeJob(name: string): void {
   const registry = readRegistry();
   registry.jobs = registry.jobs.filter(j => j.name !== name);
   writeRegistry(registry);
   fs.rmSync(jobDir(name), { recursive: true, force: true });
 }
 
-function enableJob(name) {
+export function enableJob(name: string): void {
   const registry = readRegistry();
   const job = registry.jobs.find(j => j.name === name);
   if (!job) throw new Error(`Job "${name}" not found`);
@@ -92,7 +106,7 @@ function enableJob(name) {
   writeRegistry(registry);
 }
 
-function disableJob(name) {
+export function disableJob(name: string): void {
   const registry = readRegistry();
   const job = registry.jobs.find(j => j.name === name);
   if (!job) throw new Error(`Job "${name}" not found`);
@@ -100,26 +114,11 @@ function disableJob(name) {
   writeRegistry(registry);
 }
 
-function getJob(name) {
+export function getJob(name: string): Job | undefined {
   const registry = readRegistry();
   return registry.jobs.find(j => j.name === name);
 }
 
-function listJobs() {
+export function listJobs(): Job[] {
   return readRegistry().jobs;
 }
-
-module.exports = {
-  AGENTS_DIR,
-  JOBS_DIR,
-  REGISTRY_PATH,
-  initRegistry,
-  readRegistry,
-  writeRegistry,
-  addJob,
-  removeJob,
-  enableJob,
-  disableJob,
-  getJob,
-  listJobs
-};

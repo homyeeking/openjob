@@ -2,10 +2,15 @@
 
 const fs = require('fs');
 const path = require('path');
+const { version } = require('../package.json');
 const { parseJob } = require('../lib/parser');
 const { generatePrompt } = require('../lib/prompt');
 const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs, readRegistry, REGISTRY_PATH, JOBS_DIR } = require('../lib/registry');
 const { syncToClaude } = require('../lib/sync');
+const { ensureRegistryState, summarizeJobs, readDaemonState, readRunLog } = require('../lib/state');
+const { executeJob } = require('../lib/executor');
+const { startDaemon, stopDaemon, runLoop, isProcessAlive } = require('../lib/daemon');
+const { createServer } = require('../lib/dashboard');
 
 const C = {
   reset: '\x1b[0m',
@@ -33,10 +38,16 @@ ${C.bold}COMMANDS${C.reset}
   ${C.cyan}add${C.reset} <path>          Install a job from a JOB.md file or directory
   ${C.cyan}remove${C.reset} <name>       Remove a job by name
   ${C.cyan}list${C.reset}                List all registered jobs
+  ${C.cyan}status${C.reset}              Show local runner status and job runtime info
   ${C.cyan}enable${C.reset} <name>       Enable a job
   ${C.cyan}disable${C.reset} <name>      Disable a job
+  ${C.cyan}daemon start${C.reset}        Start local jobs daemon
+  ${C.cyan}daemon stop${C.reset}         Stop local jobs daemon
+  ${C.cyan}daemon status${C.reset}       Show daemon status
+  ${C.cyan}dashboard${C.reset}           Open local web dashboard
   ${C.cyan}sync${C.reset}                Sync enabled jobs to Claude scheduled_tasks.json
-  ${C.cyan}run${C.reset} <name>          Print the prompt for a job (for manual execution)
+  ${C.cyan}run${C.reset} <name>          Execute a job immediately
+  ${C.cyan}--version${C.reset}, ${C.cyan}-v${C.reset}      Show CLI version
   ${C.cyan}--help${C.reset}              Show this help message
 `);
 }
@@ -64,10 +75,27 @@ function formatTable(jobs) {
   }
 }
 
-try {
+function formatStatusTable(jobs) {
+  if (jobs.length === 0) {
+    console.log(`  ${C.dim}No jobs registered.${C.reset}`);
+    return;
+  }
+
+  const nameWidth = Math.max(4, ...jobs.map(j => j.name.length));
+  const statusWidth = Math.max(6, ...jobs.map(j => (j.lastStatus || 'idle').length));
+  console.log(`  ${C.bold}${'NAME'.padEnd(nameWidth)}  ${'STATUS'.padEnd(statusWidth)}  NEXT RUN                 LAST RUN                 ERROR${C.reset}`);
+  for (const job of jobs) {
+    const status = job.lastStatus || 'idle';
+    const color = status === 'success' ? C.green : status === 'failed' ? C.red : status === 'running' ? C.blue : C.yellow;
+    console.log(`  ${job.name.padEnd(nameWidth)}  ${color}${status.padEnd(statusWidth)}${C.reset}  ${(job.nextRun || '-').padEnd(24)} ${(job.lastRun || '-').padEnd(24)} ${job.lastError || job.lastExitReason || '-'}`);
+  }
+}
+
+async function main() {
   switch (cmd) {
     case 'init': {
       const registry = initRegistry();
+      ensureRegistryState();
       console.log(`${C.green}Initialized global jobs registry${C.reset} at ${REGISTRY_PATH}`);
       console.log(`  jobs dir: ${JOBS_DIR}`);
       console.log(`  ${registry.jobs.length} jobs`);
@@ -86,6 +114,7 @@ try {
       }
       const job = parseJob(filePath);
       const entry = addJob(job);
+      ensureRegistryState();
       console.log(`${C.green}Added job:${C.reset} ${job.name}`);
       console.log(`  cron: ${job.cron}`);
       console.log(`  source: ${entry.source}`);
@@ -113,9 +142,25 @@ try {
     }
 
     case 'list': {
+      ensureRegistryState();
       const jobs = listJobs();
       console.log(`\n${C.bold}Registered Jobs${C.reset} (${jobs.length})\n`);
       formatTable(jobs);
+      console.log();
+      break;
+    }
+
+    case 'status': {
+      ensureRegistryState();
+      const daemon = readDaemonState();
+      const jobs = summarizeJobs();
+      console.log(`\n${C.bold}Daemon${C.reset}`);
+      console.log(`  status: ${daemon.status}`);
+      console.log(`  pid: ${daemon.pid || '-'}`);
+      console.log(`  heartbeat: ${daemon.heartbeatAt || '-'}`);
+      console.log(`  wake gap: ${daemon.lastWakeGapMs || 0}ms`);
+      console.log(`\n${C.bold}Jobs Runtime${C.reset}\n`);
+      formatStatusTable(jobs);
       console.log();
       break;
     }
@@ -167,8 +212,54 @@ try {
         console.error(`${C.red}Error:${C.reset} Job "${name}" not found`);
         process.exit(1);
       }
-      const prompt = generatePrompt(job);
-      console.log(prompt);
+      ensureRegistryState();
+      const result = await executeJob(job, 'manual');
+      console.log(`${C.green}${result.status.toUpperCase()}${C.reset} ${name}`);
+      console.log(`  started: ${result.startedAt}`);
+      console.log(`  finished: ${result.finishedAt}`);
+      console.log(`  exit: ${result.exitReason}`);
+      if (result.stderr) console.log(`  stderr: ${result.stderr.trim().slice(0, 400)}`);
+      else if (result.stdout) console.log(`  stdout: ${result.stdout.trim().slice(0, 400)}`);
+      break;
+    }
+
+    case 'daemon': {
+      const action = args[1];
+      ensureRegistryState();
+      if (action === 'start') {
+        const state = startDaemon();
+        console.log(`${C.green}Daemon${C.reset} ${state.status}`);
+        console.log(`  pid: ${state.pid || '-'}`);
+        break;
+      }
+      if (action === 'stop') {
+        const state = stopDaemon();
+        console.log(`${C.yellow}Daemon${C.reset} ${state.status}`);
+        break;
+      }
+      if (action === 'status') {
+        const state = readDaemonState();
+        const alive = state.pid ? isProcessAlive(state.pid) : false;
+        console.log(`${C.bold}Daemon Status${C.reset}`);
+        console.log(`  status: ${state.status}`);
+        console.log(`  pid: ${state.pid || '-'}`);
+        console.log(`  alive: ${alive ? 'yes' : 'no'}`);
+        console.log(`  startedAt: ${state.startedAt || '-'}`);
+        console.log(`  heartbeatAt: ${state.heartbeatAt || '-'}`);
+        break;
+      }
+      if (action === 'run') {
+        await runLoop();
+        break;
+      }
+      console.error(`${C.red}Error:${C.reset} Usage: jobs daemon <start|stop|status>`);
+      process.exit(1);
+    }
+
+    case 'dashboard': {
+      ensureRegistryState();
+      const port = args[1] ? Number(args[1]) : 0;
+      createServer(Number.isFinite(port) ? port : 0, true);
       break;
     }
 
@@ -176,6 +267,11 @@ try {
     case '-h':
     case 'help':
       printUsage();
+      break;
+
+    case '--version':
+    case '-v':
+      console.log(version);
       break;
 
     case undefined:
@@ -187,7 +283,9 @@ try {
       console.error(`Run ${C.bold}jobs --help${C.reset} for usage.`);
       process.exit(1);
   }
-} catch (err) {
+}
+
+main().catch((err) => {
   console.error(`${C.red}Error:${C.reset} ${err.message}`);
   process.exit(1);
-}
+});

@@ -13,6 +13,11 @@
   "bin": {
     "jobs": "bin/jobs"
   },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepublishOnly": "pnpm build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HomyeeKing/jobs.git",
@@ -23,7 +28,11 @@
     "url": "https://github.com/HomyeeKing/jobs/issues"
   },
   "dependencies": {
-    "gray-matter": "^4.0.3",
-    "cron-parser": "^4.9.0"
+    "cron-parser": "^4.9.0",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.7.0",
+    "typescript": "^6.0.3"
   }
 }

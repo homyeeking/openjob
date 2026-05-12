@@ -1,31 +1,34 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const { generatePrompt } = require('./prompt');
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
+import { generatePrompt } from './prompt';
+import { Registry, ClaudeTask } from './types';
 
 const CLAUDE_TASKS_PATH = path.join(process.env.HOME || '', '.claude', 'scheduled_tasks.json');
 
-function readClaudeTasks() {
+export function readClaudeTasks(): ClaudeTask[] {
   if (!fs.existsSync(CLAUDE_TASKS_PATH)) return [];
-  try { return JSON.parse(fs.readFileSync(CLAUDE_TASKS_PATH, 'utf8')); }
-  catch { return []; }
+  try { 
+    return JSON.parse(fs.readFileSync(CLAUDE_TASKS_PATH, 'utf8')) as ClaudeTask[]; 
+  }
+  catch { 
+    return []; 
+  }
 }
 
-function writeClaudeTasks(tasks) {
+export function writeClaudeTasks(tasks: ClaudeTask[]): void {
   const dir = path.dirname(CLAUDE_TASKS_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(CLAUDE_TASKS_PATH, JSON.stringify(tasks, null, 2));
 }
 
-function syncToClaude(registry) {
+export function syncToClaude(registry: Registry): { synced: number; removed: number } {
   const claudeTasks = readClaudeTasks();
-  // Remove tasks from our source (tagged with source field in prompt)
   const ourPrefix = '## Scheduled Job:';
   const otherTasks = claudeTasks.filter(t => !t.prompt || !t.prompt.includes(ourPrefix));
 
-  // Add enabled jobs
   const enabledJobs = registry.jobs.filter(j => j.enabled);
-  const newTasks = enabledJobs.map(job => ({
+  const newTasks: ClaudeTask[] = enabledJobs.map(job => ({
     id: crypto.randomUUID().slice(0, 8),
     cron: job.cron,
     prompt: generatePrompt({
@@ -44,5 +47,3 @@ function syncToClaude(registry) {
   writeClaudeTasks([...otherTasks, ...newTasks]);
   return { synced: enabledJobs.length, removed: claudeTasks.length - otherTasks.length };
 }
-
-module.exports = { syncToClaude, readClaudeTasks };

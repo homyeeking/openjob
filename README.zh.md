@@ -57,16 +57,16 @@ description: 每天上午 9 点执行的示例任务
 然后注册：
 
 ```bash
-jobs init
-jobs add ~/.agents/jobs/my-first-job
+npx @homy/jobs@latest init
+npx @homy/jobs@latest add ~/.agents/jobs/my-first-job
 ```
 
-`jobs add` 会把 Job 写入全局注册表 `~/.agents/jobs.json`，可执行的 `JOB.md` 保存在 `~/.agents/jobs/<name>/JOB.md`，并同步启用的 Job 到 Claude scheduled tasks。
+`npx @homy/jobs@latest add` 会把 Job 写入全局注册表 `~/.agents/jobs.json`，可执行的 `JOB.md` 保存在 `~/.agents/jobs/<name>/JOB.md`，并同步启用的 Job 到 Claude scheduled tasks。
 
 仓库里的 `jobs/` 目录是市场/源码模板。安装示例 Job 时会复制到全局 Jobs 目录：
 
 ```bash
-jobs add jobs/todo-night-executor
+npx @homy/jobs@latest add jobs/todo-night-executor
 ```
 
 ### 2. 核心字段
