@@ -44,10 +44,12 @@ jobs/
 ### 1. Initialize CLI
 
 ```bash
-npx @homy/jobs@latest init
+npx openjob@latest init
 ```
 
 This creates the global registry at `~/.agents/jobs.json` and the jobs directory at `~/.agents/jobs/`.
+
+The published package uses both the npm name and installed binary name `openjob`, avoiding collisions with the shell builtin `jobs` in shells like zsh. The recommended invocation is `npx openjob@latest <command>`.
 
 ### 2. Create a Job
 
@@ -81,21 +83,21 @@ Write your instructions here that Claude will follow when this job triggers.
 Then register it:
 
 ```bash
-npx @homy/jobs@latest add ~/.agents/jobs/my-first-job
+npx openjob@latest add ~/.agents/jobs/my-first-job
 ```
 
-`npx @homy/jobs@latest add` stores Jobs in the global registry at `~/.agents/jobs.json`, keeps the executable `JOB.md` under `~/.agents/jobs/<name>/JOB.md`, and syncs enabled Jobs to Claude scheduled tasks.
+`npx openjob@latest add` stores Jobs in the global registry at `~/.agents/jobs.json`, keeps the executable `JOB.md` under `~/.agents/jobs/<name>/JOB.md`, and syncs enabled Jobs to Claude scheduled tasks.
 
 Repository examples under `jobs/` are marketplace/source templates. Installing one copies it into the global Jobs directory:
 
 ```bash
-npx @homy/jobs@latest add jobs/todo-night-executor
+npx openjob@latest add jobs/todo-night-executor
 ```
 
 ### 3. Start the Daemon
 
 ```bash
-npx @homy/jobs@latest daemon start
+npx openjob@latest daemon start
 ```
 
 The daemon will periodically check and execute due jobs.
@@ -104,19 +106,19 @@ The daemon will periodically check and execute due jobs.
 
 | Command | Description |
 |---------|-------------|
-| `jobs init` | Initialize the global jobs registry |
-| `jobs add <path>` | Install a job from a JOB.md file or directory |
-| `jobs remove <name>` | Remove a job by name |
-| `jobs list` | List all registered jobs |
-| `jobs status` | Show daemon status and job runtime info |
-| `jobs enable <name>` | Enable a job |
-| `jobs disable <name>` | Disable a job |
-| `jobs run <name>` | Execute a job immediately (manual test) |
-| `jobs sync` | Sync enabled jobs to Claude scheduled_tasks.json |
-| `jobs daemon start` | Start local jobs daemon |
-| `jobs daemon stop` | Stop local jobs daemon |
-| `jobs daemon status` | Show daemon status |
-| `jobs dashboard` | Open local web dashboard |
+| `openjob init` | Initialize the global jobs registry |
+| `openjob add <path>` | Install a job from a JOB.md file or directory |
+| `openjob remove <name>` | Remove a job by name |
+| `openjob list` | List all registered jobs |
+| `openjob status` | Show daemon status and job runtime info |
+| `openjob enable <name>` | Enable a job |
+| `openjob disable <name>` | Disable a job |
+| `openjob run <name>` | Execute a job immediately (manual test) |
+| `openjob sync` | Sync enabled jobs to Claude scheduled_tasks.json |
+| `openjob daemon start` | Start local jobs daemon |
+| `openjob daemon stop` | Stop local jobs daemon |
+| `openjob daemon status` | Show daemon status |
+| `openjob dashboard` | Open local web dashboard |
 
 ## Job Definition Format
 
@@ -269,10 +271,10 @@ When Claude triggers:
 
 ```bash
 # List all jobs with basic info
-npx @homy/jobs@latest list
+npx openjob@latest list
 
 # Show detailed runtime status
-npx @homy/jobs@latest status
+npx openjob@latest status
 ```
 
 Output includes:
@@ -284,7 +286,7 @@ Output includes:
 ### 2. Web Dashboard
 
 ```bash
-npx @homy/jobs@latest dashboard
+npx openjob@latest dashboard
 ```
 
 Opens a local web interface showing:
@@ -376,7 +378,7 @@ Log entry structure:
 
 ```bash
 # 1. Initialize the system
-npx @homy/jobs@latest init
+npx openjob@latest init
 
 # 2. Create a job manually or use job-creator Skill
 mkdir -p ~/.agents/jobs/daily-report
@@ -409,22 +411,22 @@ Generate a summary of yesterday's work from git history.
 EOF
 
 # 3. Register the job
-npx @homy/jobs@latest add ~/.agents/jobs/daily-report
+npx openjob@latest add ~/.agents/jobs/daily-report
 
 # 4. Start the daemon for automatic execution
-npx @homy/jobs@latest daemon start
+npx openjob@latest daemon start
 
 # 5. Check status
-npx @homy/jobs@latest status
+npx openjob@latest status
 
 # 6. Open dashboard for monitoring
-npx @homy/jobs@latest dashboard
+npx openjob@latest dashboard
 
 # 7. Test run manually
-npx @homy/jobs@latest run daily-report
+npx openjob@latest run daily-report
 
 # 8. Sync to Claude for AI-based execution
-npx @homy/jobs@latest sync
+npx openjob@latest sync
 ```
 
 ## More Information

@@ -23,15 +23,16 @@ const C = {
   cyan: '\x1b[36m',
 };
 
+const CLI_NAME = 'openjob';
 const args = process.argv.slice(2);
 const cmd = args[0];
 
 function printUsage() {
   console.log(`
-${C.bold}jobs${C.reset} - Scheduled task system for AI agents
+${C.bold}${CLI_NAME}${C.reset} - Scheduled task system for AI agents
 
 ${C.bold}USAGE${C.reset}
-  jobs <command> [options]
+  ${CLI_NAME} <command> [options]
 
 ${C.bold}COMMANDS${C.reset}
   ${C.cyan}init${C.reset}                Initialize the global jobs registry
@@ -105,7 +106,7 @@ async function main() {
     case 'add': {
       let filePath = args[1];
       if (!filePath) {
-        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: jobs add <path>`);
+        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: ${CLI_NAME} add <path>`);
         process.exit(1);
       }
       // If path is a directory, append JOB.md
@@ -129,7 +130,7 @@ async function main() {
     case 'remove': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs remove <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: ${CLI_NAME} remove <name>`);
         process.exit(1);
       }
       removeJob(name);
@@ -168,7 +169,7 @@ async function main() {
     case 'enable': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs enable <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: ${CLI_NAME} enable <name>`);
         process.exit(1);
       }
       enableJob(name);
@@ -181,7 +182,7 @@ async function main() {
     case 'disable': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs disable <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: ${CLI_NAME} disable <name>`);
         process.exit(1);
       }
       disableJob(name);
@@ -204,7 +205,7 @@ async function main() {
     case 'run': {
       const name = args[1];
       if (!name) {
-        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: jobs run <name>`);
+        console.error(`${C.red}Error:${C.reset} Missing job name. Usage: ${CLI_NAME} run <name>`);
         process.exit(1);
       }
       const job = getJob(name);
@@ -252,7 +253,7 @@ async function main() {
         await runLoop();
         break;
       }
-      console.error(`${C.red}Error:${C.reset} Usage: jobs daemon <start|stop|status>`);
+      console.error(`${C.red}Error:${C.reset} Usage: ${CLI_NAME} daemon <start|stop|status>`);
       process.exit(1);
     }
 
@@ -280,7 +281,7 @@ async function main() {
 
     default:
       console.error(`${C.red}Unknown command:${C.reset} ${cmd}`);
-      console.error(`Run ${C.bold}jobs --help${C.reset} for usage.`);
+      console.error(`Run ${C.bold}${CLI_NAME} --help${C.reset} for usage.`);
       process.exit(1);
   }
 }

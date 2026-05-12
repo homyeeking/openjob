@@ -1,17 +1,14 @@
 {
-  "name": "@homy/jobs",
-  "version": "1.0.2",
+  "name": "openjob",
+  "version": "1.0.3",
   "description": "Out of loop scheduled task system for AI agents",
   "packageManager": "pnpm@10.33.2",
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "bin/",
     "lib/"
   ],
   "bin": {
-    "jobs": "bin/jobs"
+    "openjob": "bin/jobs"
   },
   "scripts": {
     "build": "tsc",
