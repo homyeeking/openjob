@@ -41,7 +41,28 @@ jobs/
 
 ## Quick Start
 
-### 1. Create a Job
+### 1. Initialize CLI
+
+```bash
+npx @homy/jobs@latest init
+```
+
+This creates the global registry at `~/.agents/jobs.json` and the jobs directory at `~/.agents/jobs/`.
+
+### 2. Create a Job
+
+#### Option A: Use job-creator Skill (Recommended)
+
+The easiest way is to use the built-in `job-creator` skill. Simply tell Claude:
+
+> "Create a job to check npm global updates every Monday at 9 AM"
+
+The skill will:
+1. Generate an appropriate job name and cron schedule
+2. Create `~/.agents/jobs/<name>/JOB.md` with proper structure
+3. Validate and register the job automatically
+
+#### Option B: Manual Creation
 
 Create a global Job under `~/.agents/jobs/<job-name>/JOB.md`:
 
@@ -60,7 +81,6 @@ Write your instructions here that Claude will follow when this job triggers.
 Then register it:
 
 ```bash
-npx @homy/jobs@latest init
 npx @homy/jobs@latest add ~/.agents/jobs/my-first-job
 ```
 
@@ -72,17 +92,83 @@ Repository examples under `jobs/` are marketplace/source templates. Installing o
 npx @homy/jobs@latest add jobs/todo-night-executor
 ```
 
-### 2. Core Fields
+### 3. Start the Daemon
+
+```bash
+npx @homy/jobs@latest daemon start
+```
+
+The daemon will periodically check and execute due jobs.
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `jobs init` | Initialize the global jobs registry |
+| `jobs add <path>` | Install a job from a JOB.md file or directory |
+| `jobs remove <name>` | Remove a job by name |
+| `jobs list` | List all registered jobs |
+| `jobs status` | Show daemon status and job runtime info |
+| `jobs enable <name>` | Enable a job |
+| `jobs disable <name>` | Disable a job |
+| `jobs run <name>` | Execute a job immediately (manual test) |
+| `jobs sync` | Sync enabled jobs to Claude scheduled_tasks.json |
+| `jobs daemon start` | Start local jobs daemon |
+| `jobs daemon stop` | Stop local jobs daemon |
+| `jobs daemon status` | Show daemon status |
+| `jobs dashboard` | Open local web dashboard |
+
+## Job Definition Format
+
+A Job is a Markdown file with YAML frontmatter:
+
+```markdown
+---
+name: job-name                  # Required: Unique identifier (lowercase, hyphen-separated)
+cron: 0 9 * * *                # Required: Cron expression (5 fields)
+description: What this job does # Required: Description
+condition: ./check.sh          # Optional: Execution condition script
+allowedSkills: [skill1, skill2] # Optional: Allowed skills for this job
+timeout: 60                    # Optional: Timeout in minutes (default: 60)
+retry: 1                       # Optional: Retry count on failure (default: 0)
+tags: [automation, maintenance] # Optional: Tags for categorization
+---
+
+# Job Title
+
+## Objective
+Describe what this job accomplishes.
+
+## Execution Steps
+
+1. Step one
+   ```bash
+   echo "Command to execute"
+   ```
+
+2. Step two
+   ```bash
+   another-command
+   ```
+
+## Output Requirements
+Expected output or results.
+```
+
+### Core Fields
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Unique identifier for the job (lowercase, hyphen-separated) |
 | `description` | Yes | Description of what the job does and when to use it |
 | `cron` | Yes | Cron expression defining the schedule |
-| `condition` | No | Execution condition (script path or natural language) |
+| `condition` | No | Execution condition (script path or natural language description) |
 | `allowedSkills` | No | List of Skills allowed for this job |
+| `timeout` | No | Maximum execution time in minutes |
+| `retry` | No | Number of retries on failure |
+| `tags` | No | Tags for organizing and filtering jobs |
 
-### 3. Cron Expression
+### Cron Expression
 
 ```
 ┌───────────── Minute (0-59)
@@ -99,6 +185,139 @@ Common examples:
 - `0 9 * * 1` - Every Monday at 9 AM
 - `0 0 * * *` - Every day at midnight
 - `*/30 * * * *` - Every 30 minutes
+
+## Creating Jobs with Skills
+
+### Using job-creator Skill
+
+Trigger phrases: `create job`, `new job`, `job creator`
+
+When you express an automation need, the job-creator Skill will:
+
+1. Understand your automation intent
+2. Generate an appropriate job name and cron schedule
+3. Create `~/.agents/jobs/<name>/JOB.md` with proper structure
+4. Optionally register it with `jobs add`
+
+The Skill uses the template structure and validates through the CLI to ensure compatibility.
+
+### Using jobs-scheduler Skill
+
+Trigger phrases: `/jobs`, `jobs list`, `show jobs`
+
+This Skill reads the global registry at `~/.agents/jobs.json` and displays:
+- All registered jobs with their cron schedules
+- Current status (enabled/disabled)
+- Recent execution history
+- Jobs needing attention (failing, disabled)
+
+## How Jobs Are Consumed
+
+Jobs support two execution modes:
+
+### 1. Local Daemon Execution (Shell-based)
+
+The daemon (`jobs daemon start`) runs locally and:
+
+1. **Cron Check** - Every 15 seconds, checks for due jobs
+2. **Condition Check** - If a condition is specified:
+   - If it's a script path (starts with `./` or `/`, or ends with `.sh`), executes the script
+   - If the script returns non-zero, the job is skipped
+   - Natural language conditions require AI evaluation (skip in daemon mode)
+3. **Command Extraction** - Extracts bash/sh/shell code blocks from JOB.md
+4. **Shell Execution** - Executes commands using zsh with timeout control
+5. **Result Recording** - Updates status, history, and next run time in `jobs.json`
+
+**Flow:**
+```
+Cron Check → Condition Check → Extract Code Blocks → Shell Execute → Record Result
+```
+
+### 2. Claude Scheduled Task Execution (AI-based)
+
+`jobs sync` converts enabled jobs to Claude scheduled tasks:
+
+```json
+{
+  "id": "abc123",
+  "cron": "0 9 * * *",
+  "prompt": "## Scheduled Job: my-job\n\nRead and follow instructions in /path/to/JOB.md...",
+  "recurring": true
+}
+```
+
+When Claude triggers:
+- AI reads and understands JOB.md
+- Can use allowed Skills to complete complex tasks
+- Supports natural language condition evaluation
+- More flexible but requires AI availability
+
+### Execution Mode Comparison
+
+| Aspect | Local Daemon | Claude Task |
+|--------|--------------|-------------|
+| Trigger | Timer-based | Agent Loop |
+| Execution | Shell commands | AI + Skills |
+| Condition | Script only | Script + Natural language |
+| Skills | Not available | Available |
+| Offline | Yes | Requires AI |
+| Use case | Simple automation | Complex reasoning tasks |
+
+## Monitoring Job Execution
+
+### 1. CLI Status
+
+```bash
+# List all jobs with basic info
+npx @homy/jobs@latest list
+
+# Show detailed runtime status
+npx @homy/jobs@latest status
+```
+
+Output includes:
+- Job name, status (idle/running/success/failed/missed)
+- Next scheduled run time
+- Last execution time
+- Error messages or exit reasons
+
+### 2. Web Dashboard
+
+```bash
+npx @homy/jobs@latest dashboard
+```
+
+Opens a local web interface showing:
+- Task totals (total/enabled/failed)
+- Daemon heartbeat status
+- Per-job details:
+  - Current status badge
+  - Cron expression
+  - Next/last run times
+  - Error details
+  - Recent execution history (last 3 runs)
+- Manual trigger buttons (run/enable/disable)
+
+### 3. Execution Logs
+
+Logs are stored in:
+
+- `~/.agents/jobs-state/runs/<job-name>.jsonl` - Full execution log in JSONL format
+- `~/.agents/jobs.json` - Each job's `history` array (last 20 runs)
+
+Log entry structure:
+```json
+{
+  "jobName": "my-job",
+  "trigger": "scheduled",
+  "startedAt": "2026-05-12T09:00:00.000Z",
+  "finishedAt": "2026-05-12T09:05:00.000Z",
+  "status": "success",
+  "exitReason": "exit:0",
+  "stdout": "...",
+  "stderr": "..."
+}
+```
 
 ## Execution Flow
 
@@ -152,6 +371,61 @@ Common examples:
 - **Jobs** handle scheduling and condition checking (Out of loop)
 - **Skills** handle actual task execution (In loop)
 - One Job can compose multiple Skills to complete complex tasks
+
+## Complete Workflow Example
+
+```bash
+# 1. Initialize the system
+npx @homy/jobs@latest init
+
+# 2. Create a job manually or use job-creator Skill
+mkdir -p ~/.agents/jobs/daily-report
+cat > ~/.agents/jobs/daily-report/JOB.md << 'EOF'
+---
+name: daily-report
+cron: 0 9 * * *
+description: Generate daily work summary from git commits
+tags: [report, git]
+timeout: 30
+---
+
+# Daily Report
+
+## Objective
+Generate a summary of yesterday's work from git history.
+
+## Execution Steps
+
+1. Get yesterday's git log
+   ```bash
+   git log --since="yesterday" --oneline
+   ```
+
+2. Format the report
+   ```bash
+   echo "## Daily Report $(date -d yesterday +%Y-%m-%d)"
+   git log --since="yesterday" --pretty=format:"- %s"
+   ```
+EOF
+
+# 3. Register the job
+npx @homy/jobs@latest add ~/.agents/jobs/daily-report
+
+# 4. Start the daemon for automatic execution
+npx @homy/jobs@latest daemon start
+
+# 5. Check status
+npx @homy/jobs@latest status
+
+# 6. Open dashboard for monitoring
+npx @homy/jobs@latest dashboard
+
+# 7. Test run manually
+npx @homy/jobs@latest run daily-report
+
+# 8. Sync to Claude for AI-based execution
+npx @homy/jobs@latest sync
+```
 
 ## More Information
 
