@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import matter from 'gray-matter';
-import { parseExpression } from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 import { JobDefinition } from './types';
 
 export function parseJob(filePath: string): JobDefinition {
@@ -16,7 +16,7 @@ export function parseJob(filePath: string): JobDefinition {
 
   // Validate cron expression
   try { 
-    parseExpression(data.cron as string); 
+    CronExpressionParser.parse(data.cron as string); 
   } catch (e: unknown) {
     const errorMsg = e instanceof Error ? e.message : String(e);
     throw new Error(`Invalid cron expression "${data.cron}": ${errorMsg}`);

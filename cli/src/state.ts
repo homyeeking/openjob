@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { parseExpression } from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 import { AGENTS_DIR, REGISTRY_PATH, readRegistry, writeRegistry } from './registry';
 import { Registry, Job, RunRecord, DaemonState, JobSummary } from './types';
 
@@ -38,7 +38,7 @@ export function nowIso(): string {
 
 export function safeNextRun(cron: string, currentDate: Date = new Date()): string | null {
   try {
-    return parseExpression(cron, { currentDate }).next().toISOString();
+    return CronExpressionParser.parse(cron, { currentDate }).next().toISOString();
   } catch {
     return null;
   }

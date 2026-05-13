@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       cron-parser:
-        specifier: ^4.9.0
-        version: 4.9.0
+        specifier: ^5.5.0
+        version: 5.5.0
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -30,9 +30,9 @@ packages:
   argparse@1.0.10:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
 
-  cron-parser@4.9.0:
-    resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
-    engines: {node: '>=12.0.0'}
+  cron-parser@5.5.0:
+    resolution: {integrity: sha512-oML4lKUXxizYswqmxuOCpgFS8BNUJpIu6k/2HVHyaL8Ynnf3wdf9tkns0yRdJLSIjkJ+b0DXHMZEHGpMwjnPww==}
+    engines: {node: '>=18'}
 
   esprima@4.0.1:
     resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
@@ -92,7 +92,7 @@ snapshots:
     dependencies:
       sprintf-js: 1.0.3
 
-  cron-parser@4.9.0:
+  cron-parser@5.5.0:
     dependencies:
       luxon: 3.7.2
 

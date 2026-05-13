@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { parseExpression } from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 import { spawn } from 'child_process';
 import { 
   ensureRegistryState, 
@@ -43,7 +43,7 @@ export function collectMissedJobs(lastHeartbeat: Date, current: Date): Job[] {
   return registry.jobs.filter(job => {
     if (!job.enabled) return false;
     try {
-      const interval = parseExpression(job.cron, { currentDate: from, endDate: to });
+      const interval = CronExpressionParser.parse(job.cron, { currentDate: from, endDate: to });
       interval.next();
       return true;
     } catch {

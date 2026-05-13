@@ -25,7 +25,7 @@
     "url": "https://github.com/HomyeeKing/openjob/issues"
   },
   "dependencies": {
-    "cron-parser": "^4.9.0",
+    "cron-parser": "^5.5.0",
     "gray-matter": "^4.0.3"
   },
   "devDependencies": {
