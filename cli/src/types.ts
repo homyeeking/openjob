@@ -124,6 +124,7 @@ export interface JobSummary {
   name: string;
   description: string;
   cron: string;
+  sourcePath: string;
   enabled: boolean;
   nextRun: string | null;
   lastRun: string | null;

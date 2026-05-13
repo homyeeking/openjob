@@ -163,6 +163,7 @@ export function summarizeJobs(): JobSummary[] {
     name: job.name,
     description: job.description,
     cron: job.cron,
+    sourcePath: job.sourcePath,
     enabled: job.enabled,
     nextRun: job.nextRun,
     lastRun: job.lastRun,

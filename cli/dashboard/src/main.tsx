@@ -19,6 +19,7 @@ type JobSummary = {
   name: string;
   description: string;
   cron: string;
+  sourcePath: string;
   enabled: boolean;
   nextRun?: string;
   lastRun?: string;
@@ -29,6 +30,8 @@ type JobSummary = {
   consecutiveFailures: number;
   history?: RunRecord[];
 };
+
+type DetailTab = 'detail' | 'history';
 
 type OverviewResponse = {
   daemon: {
@@ -65,14 +68,11 @@ function statusClass(status?: string): string {
   return ['success', 'failed', 'running', 'missed', 'skipped'].includes(status) ? status : 'idle';
 }
 
-function historyText(history?: RunRecord[]): string {
-  if (!history || history.length === 0) return '暂无执行记录';
-  return history.slice(-3).map((item) => {
-    const at = formatDateTime(item.finishedAt || item.startedAt);
-    const output = item.stderr || item.stdout || '';
-    const reason = item.status === 'success' && item.exitReason === 'exit:0' ? '' : (item.exitReason || '');
-    return `[${item.status}] ${at} ${reason}\n${output}`.trim();
-  }).join('\n\n');
+function runLogText(record?: RunRecord): string {
+  if (!record) return '暂无运行日志';
+  const output = [record.stdout, record.stderr].filter(Boolean).join('\n\n').trim();
+  if (output) return output;
+  return record.exitReason || '本次运行没有输出';
 }
 
 function getLatestRecord(job: JobSummary): RunRecord | undefined {
@@ -106,6 +106,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [busyJob, setBusyJob] = useState<string | null>(null);
   const [selectedJobName, setSelectedJobName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<DetailTab>('detail');
 
   async function loadOverview() {
     try {
@@ -143,36 +144,21 @@ function App() {
 
   useEffect(() => {
     const jobs = overview?.jobs || [];
-    if (jobs.length === 0) {
+    if (selectedJobName && !jobs.some((job) => job.name === selectedJobName)) {
       setSelectedJobName(null);
-      return;
-    }
-    if (!selectedJobName || !jobs.some((job) => job.name === selectedJobName)) {
-      setSelectedJobName(jobs[0].name);
     }
   }, [overview, selectedJobName]);
 
-  const stats = useMemo(() => {
-    const jobs = overview?.jobs || [];
-    return {
-      total: jobs.length,
-      enabled: jobs.filter((job) => job.enabled).length,
-      failing: jobs.filter((job) => ['failed', 'missed'].includes(job.lastStatus || '')).length,
-      running: jobs.filter((job) => job.lastStatus === 'running').length,
-    };
-  }, [overview]);
-
   const selectedJob = useMemo(() => {
     const jobs = overview?.jobs || [];
-    return jobs.find((job) => job.name === selectedJobName) || jobs[0];
+    return jobs.find((job) => job.name === selectedJobName) || null;
   }, [overview, selectedJobName]);
 
   return (
     <main className="shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Local Runner</p>
-          <h1>openjob dashboard</h1>
+          <h1 className="brand-title">OPENJOB DASHBOARD</h1>
           <p className="subtle">查看本机任务状态、执行历史、失败原因和 daemon 心跳。</p>
         </div>
         <button className="primary" onClick={loadOverview} disabled={loading}>
@@ -182,77 +168,44 @@ function App() {
 
       {error && <div className="alert">{error}</div>}
 
-      <section className="status-strip">
-        <Metric label="任务总数" value={stats.total} />
-        <Metric label="已启用" value={stats.enabled} />
-        <Metric label="失败/错过" value={stats.failing} tone={stats.failing > 0 ? 'danger' : 'ok'} />
-        <Metric label="运行中" value={stats.running} tone={stats.running > 0 ? 'info' : undefined} />
-        <Metric
-          label="daemon"
-          value={overview?.daemon.status || '-'}
-          tone={overview?.daemon.status === 'running' ? 'ok' : 'warn'}
-        />
-      </section>
-
-      <section className="machine">
-        <div>
-          <span>机器</span>
-          <strong>{overview?.machineId || '-'}</strong>
-        </div>
-        <div>
-          <span>pid</span>
-          <strong>{overview?.daemon.pid || '-'}</strong>
-        </div>
-        <div>
-          <span>启动时间</span>
-          <strong>{formatDateTime(overview?.daemon.startedAt)}</strong>
-        </div>
-        <div>
-          <span>心跳</span>
-          <strong>{formatDateTime(overview?.daemon.heartbeatAt)}</strong>
-        </div>
-      </section>
-
-      <section className="jobs-shell">
-        <div className="job-cards" aria-label="任务状态">
+      {!selectedJob && (
+        <section className="job-cards" aria-label="任务状态">
           {(overview?.jobs || []).map((job) => (
             <JobCard
               key={job.name}
               job={job}
-              selected={selectedJob?.name === job.name}
-              onSelect={() => setSelectedJobName(job.name)}
+              onSelect={() => {
+                setSelectedJobName(job.name);
+                setActiveTab('detail');
+              }}
             />
           ))}
-        </div>
 
-        {selectedJob && (
+          {!loading && overview?.jobs.length === 0 && (
+            <div className="empty">暂无任务。使用 openjob add &lt;path&gt; 添加本地任务。</div>
+          )}
+        </section>
+      )}
+
+      {selectedJob && (
+        <section className="detail-page">
           <JobDetail
             job={selectedJob}
             busyJob={busyJob}
             onAction={runAction}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onBack={() => setSelectedJobName(null)}
           />
-        )}
-
-        {!loading && overview?.jobs.length === 0 && (
-          <div className="empty">暂无任务。使用 openjob add &lt;path&gt; 添加本地任务。</div>
-        )}
-      </section>
+        </section>
+      )}
     </main>
   );
 }
 
-function Metric({ label, value, tone }: { label: string; value: string | number; tone?: string }) {
+function Info({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
   return (
-    <div className={`metric ${tone || ''}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="info">
+    <div className={wide ? 'info info-wide' : 'info'}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -261,30 +214,24 @@ function Info({ label, value }: { label: string; value: string }) {
 
 function JobCard({
   job,
-  selected,
   onSelect,
 }: {
   job: JobSummary;
-  selected: boolean;
   onSelect: () => void;
 }) {
   return (
     <button
       type="button"
-      className={`job-card ${selected ? 'selected' : ''}`}
+      className="job-card"
       onClick={onSelect}
-      aria-pressed={selected}
     >
       <span className={`status-dot ${statusClass(job.lastStatus)}`} aria-hidden="true" />
       <span className="job-card-main">
         <span className="job-card-title">{job.name}</span>
-        <span className="job-card-desc">{job.description || '无描述'}</span>
+        <span className="job-card-label">最近运行</span>
+        <span className="job-card-desc">{formatDateTime(job.lastRun)}</span>
       </span>
       <span className={`pill ${statusClass(job.lastStatus)}`}>{job.lastStatus || 'idle'}</span>
-      <span className="job-card-meta">
-        <span>{job.enabled ? 'enabled' : 'disabled'}</span>
-        <span>{job.consecutiveFailures ? `${job.consecutiveFailures} failures` : `${job.runCount} runs`}</span>
-      </span>
     </button>
   );
 }
@@ -293,15 +240,24 @@ function JobDetail({
   job,
   busyJob,
   onAction,
+  activeTab,
+  onTabChange,
+  onBack,
 }: {
   job: JobSummary;
   busyJob: string | null;
   onAction: (job: JobSummary, action: JobAction) => void;
+  activeTab: DetailTab;
+  onTabChange: (tab: DetailTab) => void;
+  onBack: () => void;
 }) {
   const message = jobMessage(job);
+  const latestRecord = getLatestRecord(job);
+  const history = [...(job.history || [])].reverse();
 
   return (
     <article className="job-detail">
+      <button className="back-button" type="button" onClick={onBack}>返回</button>
       <div className="job-head">
         <div>
           <p className="detail-kicker">任务详情</p>
@@ -313,6 +269,7 @@ function JobDetail({
 
       <div className="job-grid">
         <Info label="cron" value={job.cron} />
+        <Info label="存放路径" value={job.sourcePath || '-'} wide />
         <Info label="下次执行" value={formatDateTime(job.nextRun)} />
         <Info label="上次执行" value={formatDateTime(job.lastRun)} />
         <Info label="连续失败" value={String(job.consecutiveFailures || 0)} />
@@ -328,11 +285,65 @@ function JobDetail({
         <span className={job.enabled ? 'enabled' : 'disabled'}>{job.enabled ? 'enabled' : 'disabled'}</span>
       </div>
 
-      {message && (
-        <div className={`message-line ${message.tone}`}>{message.text}</div>
+      <div className="tabs" role="tablist" aria-label="任务详情视图">
+        <button
+          type="button"
+          className={activeTab === 'detail' ? 'active' : ''}
+          onClick={() => onTabChange('detail')}
+          role="tab"
+          aria-selected={activeTab === 'detail'}
+        >
+          详情
+        </button>
+        <button
+          type="button"
+          className={activeTab === 'history' ? 'active' : ''}
+          onClick={() => onTabChange('history')}
+          role="tab"
+          aria-selected={activeTab === 'history'}
+        >
+          运行历史
+        </button>
+      </div>
+
+      {activeTab === 'detail' && (
+        <>
+          {message && (
+            <div className={`message-line ${message.tone}`}>{message.text}</div>
+          )}
+          <pre>{runLogText(latestRecord)}</pre>
+        </>
       )}
 
-      <pre>{historyText(job.history)}</pre>
+      {activeTab === 'history' && (
+        <div className="history-table-wrap">
+          <table className="history-table">
+            <thead>
+              <tr>
+                <th>运行时间</th>
+                <th>运行状态</th>
+                <th>结束时间</th>
+                <th>退出原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((record, index) => (
+                <tr key={`${record.startedAt || 'run'}-${index}`}>
+                  <td>{formatDateTime(record.startedAt || record.finishedAt)}</td>
+                  <td><span className={`pill ${statusClass(record.status)}`}>{record.status || 'idle'}</span></td>
+                  <td>{formatDateTime(record.finishedAt)}</td>
+                  <td>{record.exitReason || '-'}</td>
+                </tr>
+              ))}
+              {history.length === 0 && (
+                <tr>
+                  <td colSpan={4}>暂无运行历史</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </article>
   );
 }
