@@ -70,8 +70,34 @@ function historyText(history?: RunRecord[]): string {
   return history.slice(-3).map((item) => {
     const at = formatDateTime(item.finishedAt || item.startedAt);
     const output = item.stderr || item.stdout || '';
-    return `[${item.status}] ${at} ${item.exitReason || ''}\n${output}`.trim();
+    const reason = item.status === 'success' && item.exitReason === 'exit:0' ? '' : (item.exitReason || '');
+    return `[${item.status}] ${at} ${reason}\n${output}`.trim();
   }).join('\n\n');
+}
+
+function getLatestRecord(job: JobSummary): RunRecord | undefined {
+  return job.history?.[job.history.length - 1];
+}
+
+function jobMessage(job: JobSummary): { tone: 'success' | 'error'; text: string } | null {
+  const latest = getLatestRecord(job);
+  const output = latest?.stderr?.trim() || latest?.stdout?.trim() || '';
+
+  if (job.lastStatus === 'success') {
+    if (output) {
+      return { tone: 'success', text: output };
+    }
+    if (job.lastExitReason && job.lastExitReason !== 'exit:0') {
+      return { tone: 'success', text: job.lastExitReason };
+    }
+    return null;
+  }
+
+  if (job.lastError || job.lastExitReason) {
+    return { tone: 'error', text: job.lastError || job.lastExitReason || '' };
+  }
+
+  return null;
 }
 
 function App() {
@@ -171,8 +197,10 @@ function App() {
       </section>
 
       <section className="jobs">
-        {(overview?.jobs || []).map((job) => (
-          <article className="job" key={job.name}>
+        {(overview?.jobs || []).map((job) => {
+          const message = jobMessage(job);
+
+          return <article className="job" key={job.name}>
             <div className="job-head">
               <div>
                 <h2>{job.name}</h2>
@@ -198,12 +226,12 @@ function App() {
               <span className={job.enabled ? 'enabled' : 'disabled'}>{job.enabled ? 'enabled' : 'disabled'}</span>
             </div>
 
-            {(job.lastError || job.lastExitReason) && (
-              <div className="error-line">{job.lastError || job.lastExitReason}</div>
+            {message && (
+              <div className={`message-line ${message.tone}`}>{message.text}</div>
             )}
             <pre>{historyText(job.history)}</pre>
           </article>
-        ))}
+        })}
 
         {!loading && overview?.jobs.length === 0 && (
           <div className="empty">暂无任务。使用 openjob add &lt;path&gt; 添加本地任务。</div>
