@@ -105,6 +105,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyJob, setBusyJob] = useState<string | null>(null);
+  const [selectedJobName, setSelectedJobName] = useState<string | null>(null);
 
   async function loadOverview() {
     try {
@@ -140,6 +141,17 @@ function App() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const jobs = overview?.jobs || [];
+    if (jobs.length === 0) {
+      setSelectedJobName(null);
+      return;
+    }
+    if (!selectedJobName || !jobs.some((job) => job.name === selectedJobName)) {
+      setSelectedJobName(jobs[0].name);
+    }
+  }, [overview, selectedJobName]);
+
   const stats = useMemo(() => {
     const jobs = overview?.jobs || [];
     return {
@@ -149,6 +161,11 @@ function App() {
       running: jobs.filter((job) => job.lastStatus === 'running').length,
     };
   }, [overview]);
+
+  const selectedJob = useMemo(() => {
+    const jobs = overview?.jobs || [];
+    return jobs.find((job) => job.name === selectedJobName) || jobs[0];
+  }, [overview, selectedJobName]);
 
   return (
     <main className="shell">
@@ -196,42 +213,25 @@ function App() {
         </div>
       </section>
 
-      <section className="jobs">
-        {(overview?.jobs || []).map((job) => {
-          const message = jobMessage(job);
+      <section className="jobs-shell">
+        <div className="job-cards" aria-label="任务状态">
+          {(overview?.jobs || []).map((job) => (
+            <JobCard
+              key={job.name}
+              job={job}
+              selected={selectedJob?.name === job.name}
+              onSelect={() => setSelectedJobName(job.name)}
+            />
+          ))}
+        </div>
 
-          return <article className="job" key={job.name}>
-            <div className="job-head">
-              <div>
-                <h2>{job.name}</h2>
-                <p>{job.description || '无描述'}</p>
-              </div>
-              <span className={`pill ${statusClass(job.lastStatus)}`}>{job.lastStatus || 'idle'}</span>
-            </div>
-
-            <div className="job-grid">
-              <Info label="cron" value={job.cron} />
-              <Info label="下次执行" value={formatDateTime(job.nextRun)} />
-              <Info label="上次执行" value={formatDateTime(job.lastRun)} />
-              <Info label="连续失败" value={String(job.consecutiveFailures || 0)} />
-            </div>
-
-            <div className="actions">
-              <button onClick={() => runAction(job, 'run')} disabled={busyJob !== null}>
-                {busyJob === `${job.name}:run` ? '执行中' : '立即执行'}
-              </button>
-              <button onClick={() => runAction(job, job.enabled ? 'disable' : 'enable')} disabled={busyJob !== null}>
-                {job.enabled ? '禁用' : '启用'}
-              </button>
-              <span className={job.enabled ? 'enabled' : 'disabled'}>{job.enabled ? 'enabled' : 'disabled'}</span>
-            </div>
-
-            {message && (
-              <div className={`message-line ${message.tone}`}>{message.text}</div>
-            )}
-            <pre>{historyText(job.history)}</pre>
-          </article>
-        })}
+        {selectedJob && (
+          <JobDetail
+            job={selectedJob}
+            busyJob={busyJob}
+            onAction={runAction}
+          />
+        )}
 
         {!loading && overview?.jobs.length === 0 && (
           <div className="empty">暂无任务。使用 openjob add &lt;path&gt; 添加本地任务。</div>
@@ -256,6 +256,84 @@ function Info({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function JobCard({
+  job,
+  selected,
+  onSelect,
+}: {
+  job: JobSummary;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`job-card ${selected ? 'selected' : ''}`}
+      onClick={onSelect}
+      aria-pressed={selected}
+    >
+      <span className={`status-dot ${statusClass(job.lastStatus)}`} aria-hidden="true" />
+      <span className="job-card-main">
+        <span className="job-card-title">{job.name}</span>
+        <span className="job-card-desc">{job.description || '无描述'}</span>
+      </span>
+      <span className={`pill ${statusClass(job.lastStatus)}`}>{job.lastStatus || 'idle'}</span>
+      <span className="job-card-meta">
+        <span>{job.enabled ? 'enabled' : 'disabled'}</span>
+        <span>{job.consecutiveFailures ? `${job.consecutiveFailures} failures` : `${job.runCount} runs`}</span>
+      </span>
+    </button>
+  );
+}
+
+function JobDetail({
+  job,
+  busyJob,
+  onAction,
+}: {
+  job: JobSummary;
+  busyJob: string | null;
+  onAction: (job: JobSummary, action: JobAction) => void;
+}) {
+  const message = jobMessage(job);
+
+  return (
+    <article className="job-detail">
+      <div className="job-head">
+        <div>
+          <p className="detail-kicker">任务详情</p>
+          <h2>{job.name}</h2>
+          <p>{job.description || '无描述'}</p>
+        </div>
+        <span className={`pill ${statusClass(job.lastStatus)}`}>{job.lastStatus || 'idle'}</span>
+      </div>
+
+      <div className="job-grid">
+        <Info label="cron" value={job.cron} />
+        <Info label="下次执行" value={formatDateTime(job.nextRun)} />
+        <Info label="上次执行" value={formatDateTime(job.lastRun)} />
+        <Info label="连续失败" value={String(job.consecutiveFailures || 0)} />
+      </div>
+
+      <div className="actions">
+        <button onClick={() => onAction(job, 'run')} disabled={busyJob !== null}>
+          {busyJob === `${job.name}:run` ? '执行中' : '立即执行'}
+        </button>
+        <button onClick={() => onAction(job, job.enabled ? 'disable' : 'enable')} disabled={busyJob !== null}>
+          {job.enabled ? '禁用' : '启用'}
+        </button>
+        <span className={job.enabled ? 'enabled' : 'disabled'}>{job.enabled ? 'enabled' : 'disabled'}</span>
+      </div>
+
+      {message && (
+        <div className={`message-line ${message.tone}`}>{message.text}</div>
+      )}
+
+      <pre>{historyText(job.history)}</pre>
+    </article>
   );
 }
 
