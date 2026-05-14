@@ -432,7 +432,7 @@ npx openjob@latest sync
 ## More Information
 
 - [Specification](./spec/jobs-spec.md) - Complete Jobs specification
-- [Template](./template/JOB.md) - Template for creating new Jobs
+- [Template](./skills/job-creator/templates/JOB.md) - Template for creating new Jobs
 - [Example Jobs](./jobs/) - View more examples
 
 ## Related

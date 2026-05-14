@@ -432,7 +432,7 @@ npx openjob@latest sync
 ## 更多信息
 
 - [规范文档](./spec/jobs-spec.md) - 完整的 Jobs 规范定义
-- [模板](./template/JOB.md) - 创建新 Job 的模板
+- [模板](./skills/job-creator/templates/JOB.md) - 创建新 Job 的模板
 - [示例 Jobs](./jobs/) - 查看更多示例
 
 ## 相关

@@ -164,10 +164,10 @@ Use \`write-to-blog\` skill to publish the summary article to personal blog.
   },
   {
     rank: 3,
-    name: 'npm-global-update',
-    desc: 'Automatically update installed npm global packages every Monday to keep the development environment up to date.',
-    fullDesc: 'Keeps your global npm packages current by running weekly updates. Records version lists before and after, flags major version bumps separately, and handles errors gracefully without affecting subsequent package updates.',
-    tags: ['maintenance', 'npm'],
+    name: 'environment-global-update',
+    desc: 'Automatically update installed npm global packages, Homebrew packages, and global skills every Monday to keep the development environment up to date.',
+    fullDesc: 'Keeps your npm globals, Homebrew dependencies, and global skills current by running weekly non-interactive updates. Records version and outdated lists before and after, flags major version bumps separately, and handles errors gracefully without affecting subsequent updates.',
+    tags: ['maintenance', 'npm', 'homebrew', 'skills'],
     cron: '0 9 * * 1',
     cronLabel: 'Every Monday 9 AM',
     timeout: 30,
@@ -176,12 +176,12 @@ Use \`write-to-blog\` skill to publish the summary article to personal blog.
     category: 'maintenance',
     allowedSkills: [],
     condition: '',
-    steps: ['List current global packages', 'Execute npm update -g', 'Verify update results', 'Record warnings and errors'],
-    body: `# npm Global Dependencies Update
+    steps: ['List current global packages', 'Execute npm update -g', 'Upgrade Homebrew packages', 'Update global skills'],
+    body: `# Environment Global Dependencies Update
 
 ## Objective
 
-Automatically update installed npm global packages every Monday to keep the development environment up to date.
+Automatically update installed npm global packages, Homebrew packages, and global skills every Monday to keep the development environment up to date. All commands must run in non-interactive mode.
 
 ## Execution Steps
 
@@ -190,13 +190,35 @@ Automatically update installed npm global packages every Monday to keep the deve
    npm list -g --depth=0
    \`\`\`
 
-2. Execute global update
+2. Execute npm global update in non-interactive mode
    \`\`\`bash
    npm update -g
    \`\`\`
 
-3. Verify update results
+3. Check current Homebrew package status
+   \`\`\`bash
+   brew outdated
+   \`\`\`
+
+4. Update Homebrew formulae metadata in non-interactive mode
+   \`\`\`bash
+   HOMEBREW_NO_ENV_HINTS=1 brew update --quiet
+   \`\`\`
+
+5. Upgrade all outdated Homebrew dependencies in non-interactive mode
+   \`\`\`bash
+   HOMEBREW_NO_ENV_HINTS=1 brew upgrade
+   \`\`\`
+
+6. Update global skills in non-interactive mode
+   \`\`\`bash
+   npx skills@latest update -y -g
+   \`\`\`
+
+7. Verify update results
    - Run \`npm list -g --depth=0\` again for comparison
+   - Run \`brew outdated\` again to verify no pending upgrades remain
+   - Optionally run \`npm list -g --depth=0 | grep skills\` or equivalent if verification is needed
    - Check for any errors
 
 ## Output Requirements
@@ -204,13 +226,17 @@ Automatically update installed npm global packages every Monday to keep the deve
 Record the following information:
 - Version list before update
 - Version list after update
+- Homebrew outdated list before update
+- Homebrew outdated list after update
+- Global skills update result
 - Any warnings or error messages
 
 ## Notes
 
 - If certain packages need to stay at specific versions, check and skip them first
 - Record specific errors when update fails, don't affect subsequent execution
-- If there are major version bumps, mark and record them separately`
+- If there are major version bumps, mark and record them separately
+- All commands should avoid interactive prompts; prefer explicit non-interactive flags or environment variables when available`
   },
   {
     rank: 4,

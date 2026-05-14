@@ -1,7 +1,7 @@
 <claude-mem-context>
 # Memory Context
 
-# [jobs] recent context, 2026-05-13 4:53pm GMT+8
+# [jobs] recent context, 2026-05-14 3:17pm GMT+8
 
 No previous sessions found.
 </claude-mem-context>
@@ -15,3 +15,4 @@ No previous sessions found.
 - When updating `README.md`, also sync the corresponding changes to `README.zh.md` and `AGENTS.md`.
 - In user-facing docs, prefer CLI examples in the form `npx openjob@latest <command>`.
 - The published CLI package uses the npm name `openjob`, and its single exposed bin is also `openjob` to avoid collisions with the shell builtin `jobs` during `npx` execution.
+- The Job creation template lives at `skills/job-creator/templates/JOB.md`.

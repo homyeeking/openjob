@@ -44,17 +44,19 @@
       "runCount": 0
     },
     {
-      "name": "npm-global-update",
-      "source": "jobs/npm-global-update/JOB.md",
+      "name": "environment-global-update",
+      "source": "jobs/environment-global-update/JOB.md",
       "cron": "0 9 * * 1",
-      "description": "Update npm global dependencies every Monday at 9 AM",
+      "description": "Update npm global dependencies, Homebrew packages, and global skills every Monday at 9 AM",
       "condition": "",
       "allowedSkills": [],
       "timeout": 30,
       "retry": 0,
       "tags": [
         "maintenance",
-        "npm"
+        "npm",
+        "homebrew",
+        "skills"
       ],
       "enabled": true,
       "installedAt": "2026-05-09T04:13:47.596Z",

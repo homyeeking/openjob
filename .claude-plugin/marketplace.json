@@ -15,7 +15,7 @@
       "source": "./",
       "strict": false,
       "jobs": [
-        "./jobs/npm-global-update"
+        "./jobs/environment-global-update"
       ]
     },
     {

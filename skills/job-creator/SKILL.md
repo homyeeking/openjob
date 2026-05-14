@@ -13,6 +13,12 @@ triggers:
 
 Create a schedulable global Job that matches the repository Jobs specification and the current `jobs` CLI.
 
+## References
+
+- Template: `skills/job-creator/templates/JOB.md`
+- Create the job file at `~/.agents/jobs/<job-name>/JOB.md`
+- If `~/.agents/jobs.json` does not exist yet, run `npx openjob@latest init` first
+
 ## Workflow
 
 1. Understand the automation request.
@@ -22,13 +28,11 @@ Create a schedulable global Job that matches the repository Jobs specification a
    - Use lowercase letters, numbers, and hyphens only.
    - Save to `~/.agents/jobs/<job-name>/JOB.md`.
 3. Write `JOB.md` with YAML frontmatter plus Markdown instructions.
+   - Refer to the template in `skills/job-creator/templates/JOB.md`.
    - Required frontmatter: `name`, `cron`, `description`.
    - Optional frontmatter: `condition`, `allowedSkills`, `timeout`, `retry`, `tags`.
-4. Validate through the CLI path whenever possible.
-   - Run `node cli/bin/openjob add ~/.agents/jobs/<job-name>` only if the user wants the job registered now.
-   - If `~/.agents/jobs.json` is missing and registration is requested, run `node cli/bin/openjob init` first.
-   - `jobs add` is the source of truth for parsing and cron validation.
-5. Report the file path, schedule, registration status, and any known gaps.
+4. If initialization is needed, run `npx openjob@latest init`.
+5. Report the file path, schedule, and any known gaps.
 
 ## Field Guidance
 
@@ -51,52 +55,4 @@ Common cron values:
 | Every 6 hours | `0 */6 * * *` |
 | Monthly on the 1st at 9 AM | `0 9 1 * *` |
 
-## JOB.md Shape
-
-Use this structure unless the task needs a stronger custom shape:
-
-```markdown
----
-name: example-job
-cron: 0 9 * * *
-description: Check project state every morning and report actionable follow-ups.
-condition: Check whether there is new project state to review.
-allowedSkills: [jobs-scheduler]
-timeout: 60
-retry: 0
-tags: [automation]
----
-
-# Example Job
-
-## Objective
-
-Describe the outcome the agent should produce.
-
-## Execution Steps
-
-1. Inspect the current state relevant to the condition.
-2. Execute the requested automation.
-3. Verify the result before reporting completion.
-
-## Output Requirements
-
-Report what changed, what was verified, and any blockers.
-
-## Notes
-
-Keep side effects scoped to the task described in this job.
-```
-
-## CLI Alignment
-
-The current `jobs` CLI supports:
-
-- `jobs init`: create `~/.agents/jobs.json` and `~/.agents/jobs/`.
-- `jobs add <path>`: parse `JOB.md`, copy it to `~/.agents/jobs/<name>/JOB.md`, register the job globally, and sync enabled jobs to Claude scheduled tasks.
-- `jobs list`: display registered jobs.
-- `jobs run <name>`: print the prompt for manual execution.
-- `jobs enable|disable|remove <name>`: update registry state and sync.
-- `jobs sync`: sync enabled registry entries to Claude scheduled tasks.
-
-Prefer `node cli/bin/openjob ...` inside this repository unless `openjob` is known to be installed globally.
+Prefer `npx openjob@latest ...` for user-facing instructions and examples.
