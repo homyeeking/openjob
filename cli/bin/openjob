@@ -120,10 +120,6 @@ async function main() {
       console.log(`cron: ${job.cron}`);
       console.log(`source: ${entry.source}`);
       console.log(`original: ${entry.originalSource}`);
-      // Auto-sync after adding
-      const registry = readRegistry();
-      const result = syncToClaude(registry);
-      console.log(`${C.blue}Synced${C.reset} ${result.synced} jobs to Claude`);
       break;
     }
 
