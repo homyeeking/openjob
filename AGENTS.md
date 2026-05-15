@@ -1,7 +1,7 @@
 <claude-mem-context>
 # Memory Context
 
-# [openjob] recent context, 2026-05-14 8:49pm GMT+8
+# [openjob] recent context, 2026-05-14 9:02pm GMT+8
 
 No previous sessions found.
 </claude-mem-context>
@@ -14,5 +14,6 @@ No previous sessions found.
 - Do not add or update `package-lock.json`; use `pnpm-lock.yaml` instead.
 - When updating `README.md`, also sync the corresponding changes to `README.zh.md` and `AGENTS.md`.
 - In user-facing docs, prefer CLI examples in the form `npx openjob@latest <command>`.
+- `openjob add SOURCE` supports local JOB.md paths/directories and GitHub sources such as `owner/repo`, `owner/repo/path/to/job`, `owner/repo#branch`, and `owner/repo#branch@job-name`.
 - The published CLI package uses the npm name `openjob`, and its single exposed bin is also `openjob` to avoid collisions with the shell builtin `jobs` during `npx` execution.
 - The Job creation template lives at `skills/job-creator/templates/JOB.md`.

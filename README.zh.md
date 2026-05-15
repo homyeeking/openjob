@@ -94,6 +94,32 @@ npx openjob@latest add ~/.agents/jobs/my-first-job
 npx openjob@latest add jobs/todo-night-executor
 ```
 
+#### Source Formats
+
+```bash
+# GitHub shorthand (owner/repo)
+npx openjob@latest add owner/repo
+
+# Full GitHub URL
+npx openjob@latest add https://github.com/owner/repo
+
+# Direct path to a job in a repo
+npx openjob@latest add HomyeeKing/openjob/skills/job-creator/templates
+npx openjob@latest add https://github.com/owner/repo/tree/main/path/to/job
+
+# Branch, tag, or commit
+npx openjob@latest add owner/repo#main
+
+# Select a job by name
+npx openjob@latest add owner/repo@daily-report
+
+# Branch plus job name
+npx openjob@latest add owner/repo#main@daily-report
+
+# Local path
+npx openjob@latest add ./jobs/todo-night-executor
+```
+
 ### 3. 启动守护进程
 
 ```bash
@@ -107,7 +133,7 @@ npx openjob@latest daemon start
 | 命令 | 说明 |
 |------|------|
 | `openjob init` | 初始化全局任务注册表 |
-| `openjob add <path>` | 从 JOB.md 文件或目录安装任务 |
+| `openjob add SOURCE` | 从本地路径或 GitHub 仓库安装任务 |
 | `openjob remove <name>` | 按名称移除任务 |
 | `openjob list` | 列出所有已注册的任务 |
 | `openjob status` | 显示守护进程状态和任务运行时信息 |

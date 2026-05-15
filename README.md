@@ -94,6 +94,32 @@ Repository examples under `jobs/` are marketplace/source templates. Installing o
 npx openjob@latest add jobs/todo-night-executor
 ```
 
+#### Source Formats
+
+```bash
+# GitHub shorthand (owner/repo)
+npx openjob@latest add owner/repo
+
+# Full GitHub URL
+npx openjob@latest add https://github.com/owner/repo
+
+# Direct path to a job in a repo
+npx openjob@latest add HomyeeKing/openjob/skills/job-creator/templates
+npx openjob@latest add https://github.com/owner/repo/tree/main/path/to/job
+
+# Branch, tag, or commit
+npx openjob@latest add owner/repo#main
+
+# Select a job by name
+npx openjob@latest add owner/repo@daily-report
+
+# Branch plus job name
+npx openjob@latest add owner/repo#main@daily-report
+
+# Local path
+npx openjob@latest add ./jobs/todo-night-executor
+```
+
 ### 3. Start the Daemon
 
 ```bash
@@ -107,7 +133,7 @@ The daemon will periodically check and execute due jobs.
 | Command | Description |
 |---------|-------------|
 | `openjob init` | Initialize the global jobs registry |
-| `openjob add <path>` | Install a job from a JOB.md file or directory |
+| `openjob add SOURCE` | Install a job from a local path or GitHub repository |
 | `openjob remove <name>` | Remove a job by name |
 | `openjob list` | List all registered jobs |
 | `openjob status` | Show daemon status and job runtime info |

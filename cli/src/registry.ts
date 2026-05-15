@@ -55,7 +55,7 @@ export function addJob(job: Partial<Job> & { name: string; source: string; sourc
   const entry: Job = {
     name: job.name,
     source: targetFile,
-    originalSource: sourcePath,
+    originalSource: job.originalSource || sourcePath,
     sourcePath: targetFile,
     cron: job.cron || '',
     description: job.description || '',

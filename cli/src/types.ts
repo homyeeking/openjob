@@ -34,6 +34,7 @@ export interface JobDefinition {
   body?: string;
   source: string;
   sourcePath: string;
+  originalSource?: string;
 }
 
 /** Job 完整记录（包含运行时状态） */

@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
 const { version } = require('../package.json');
-const { parseJob } = require('../lib/parser');
+const { resolveJobSource } = require('../lib/installer');
 const { generatePrompt } = require('../lib/prompt');
 const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs, readRegistry, REGISTRY_PATH, JOBS_DIR } = require('../lib/registry');
 const { syncToClaude } = require('../lib/sync');
@@ -36,7 +34,7 @@ ${C.bold}USAGE${C.reset}
 
 ${C.bold}COMMANDS${C.reset}
   ${C.cyan}init${C.reset}                Initialize the global jobs registry
-  ${C.cyan}add${C.reset} <path>          Install a job from a JOB.md file or directory
+  ${C.cyan}add${C.reset} <source>        Install a job from a local path or GitHub repository
   ${C.cyan}remove${C.reset} <name>       Remove a job by name
   ${C.cyan}list${C.reset}                List all registered jobs
   ${C.cyan}status${C.reset}              Show local runner status and job runtime info
@@ -104,22 +102,22 @@ async function main() {
     }
 
     case 'add': {
-      let filePath = args[1];
-      if (!filePath) {
-        console.error(`${C.red}Error:${C.reset} Missing file path. Usage: ${CLI_NAME} add <path>`);
+      const source = args[1];
+      if (!source) {
+        console.error(`${C.red}Error:${C.reset} Missing source. Usage: ${CLI_NAME} add <source>`);
         process.exit(1);
       }
-      // If path is a directory, append JOB.md
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-        filePath = path.join(filePath, 'JOB.md');
+      const resolved = resolveJobSource(source);
+      try {
+        const entry = addJob(resolved.job);
+        ensureRegistryState();
+        console.log(`${C.green}Added job:${C.reset} ${resolved.job.name}`);
+        console.log(`cron: ${resolved.job.cron}`);
+        console.log(`source: ${entry.source}`);
+        console.log(`original: ${entry.originalSource}`);
+      } finally {
+        resolved.cleanup();
       }
-      const job = parseJob(filePath);
-      const entry = addJob(job);
-      ensureRegistryState();
-      console.log(`${C.green}Added job:${C.reset} ${job.name}`);
-      console.log(`cron: ${job.cron}`);
-      console.log(`source: ${entry.source}`);
-      console.log(`original: ${entry.originalSource}`);
       break;
     }
 
