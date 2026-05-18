@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { afterEach, describe, expect, it } from 'vitest';
+import { resolveAgentsDir } from '../src/registry';
 import { parseSource } from '../src/source';
 import { installerInternals } from '../src/installer';
 
@@ -94,6 +95,13 @@ describe('parseSource', () => {
       type: 'local',
       input: './docs/page.md#anchor'
     });
+  });
+});
+
+describe('registry paths', () => {
+  it('resolves global agents dir from os homedir when HOME is missing', () => {
+    expect(resolveAgentsDir({} as NodeJS.ProcessEnv, () => '/tmp/openjob-global-home'))
+      .toBe('/tmp/openjob-global-home/.agents');
   });
 });
 

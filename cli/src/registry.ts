@@ -1,8 +1,29 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { Registry, Job } from './types';
 
-export const AGENTS_DIR = path.join(process.env.HOME || process.cwd(), '.agents');
+export function resolveHomeDir(
+  env: NodeJS.ProcessEnv = process.env,
+  homedir: () => string = os.homedir
+): string {
+  const homeFromEnv = env.HOME?.trim();
+  if (homeFromEnv) return homeFromEnv;
+
+  const homeFromOs = homedir().trim();
+  if (homeFromOs) return homeFromOs;
+
+  throw new Error('Unable to resolve the global home directory for openjob');
+}
+
+export function resolveAgentsDir(
+  env: NodeJS.ProcessEnv = process.env,
+  homedir: () => string = os.homedir
+): string {
+  return path.join(resolveHomeDir(env, homedir), '.agents');
+}
+
+export const AGENTS_DIR = resolveAgentsDir();
 export const JOBS_DIR = path.join(AGENTS_DIR, 'jobs');
 export const REGISTRY_PATH = path.join(AGENTS_DIR, 'jobs.json');
 
