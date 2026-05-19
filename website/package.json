@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && cp -R ../template ../spec ../jobs dist/",
+    "build": "tsc -b && vite build && pkg_dir=$(dirname \"$npm_package_json\") && for path in \"$pkg_dir/../templates\" \"$pkg_dir/../spec\" \"$pkg_dir/../jobs\"; do if [ -e \"$path\" ]; then cp -R \"$path\" \"$pkg_dir/dist/\"; fi; done",
     "lint": "eslint .",
     "preview": "vite preview"
   },

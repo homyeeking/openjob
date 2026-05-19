@@ -10,41 +10,69 @@ import Toast, { useToast } from '../components/Toast';
 
 function Hero() {
   const handleCopy = () => {
-    navigator.clipboard.writeText('openjob add <owner/repo>');
-    // parent handles toast
+    navigator.clipboard.writeText('openjob add HomyeeKing/openjob');
   };
 
   return (
-    <section className="text-center py-20 px-6 max-w-[900px] mx-auto">
-      <pre className="font-mono text-accent leading-tight whitespace-pre mb-6" style={{ fontSize: 'clamp(24px, 5vw, 48px)', textShadow: '0 0 40px #00d4aa22' }}>
-{`  ██████╗ ██████╗ ███████╗███╗   ██╗     ██╗ ██████╗ ██████╗
- ██╔═══██╗██╔══██╗██╔════╝████╗  ██║     ██║██╔═══██╗██╔══██╗
- ██║   ██║██████╔╝█████╗  ██╔██╗ ██║     ██║██║   ██║██████╔╝
- ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██   ██║██║   ██║██╔══██╗
- ╚██████╔╝██║     ███████╗██║ ╚████║╚█████╔╝╚██████╔╝██████╔╝
-  ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚════╝  ╚═════╝ ╚═════╝`}
-      </pre>
-      <h1
-        className="font-bold mb-4"
-        style={{
-          fontSize: 'clamp(28px, 4vw, 44px)',
-          background: 'linear-gradient(135deg, #ededed, #888888)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
-      >
-        The Open Agent Jobs Ecosystem
-      </h1>
-      <p className="text-lg text-text-secondary max-w-[640px] mx-auto mb-8">
-        Scheduled tasks that run outside the Agent Loop. Let AI work for you while you sleep &mdash; cron-powered, condition-driven, fully autonomous.
-      </p>
-      <div
-        onClick={handleCopy}
-        className="inline-flex items-center gap-3 bg-bg-card border border-border rounded-lg px-6 py-3.5 font-mono text-sm text-text-primary cursor-pointer transition-border hover:border-accent"
-      >
-        <span className="text-accent">$</span>
-        <span>openjob add &lt;owner/repo&gt;</span>
-        <span className="text-text-tertiary text-xs font-sans">click to copy</span>
+    <section className="relative overflow-hidden px-6 pb-18 pt-10">
+      <div className="absolute inset-x-0 top-0 -z-10 mx-auto h-72 max-w-5xl rounded-full bg-[radial-gradient(circle_at_center,rgba(0,212,170,0.18),transparent_68%)] blur-3xl" />
+      <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-[minmax(0,1.15fr)_380px] lg:items-center">
+        <div>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            jobs marketplace
+          </div>
+          <h1 className="mb-5 max-w-[720px] text-5xl font-bold leading-tight md:text-6xl">
+            Discover cron-powered jobs for Claude and agent workflows.
+          </h1>
+          <p className="mb-8 max-w-[700px] text-lg text-text-secondary md:text-xl">
+            A marketplace for reusable automation jobs: browse popular recipes, inspect prompts, and install production-ready tasks that keep shipping while you sleep.
+          </p>
+          <div className="mb-8 flex flex-wrap gap-3">
+            <a href="#leaderboard" className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-semibold text-black transition-opacity hover:opacity-85 hover:no-underline">
+              Explore jobs
+            </a>
+            <div
+              onClick={handleCopy}
+              className="inline-flex items-center gap-3 rounded-xl border border-border bg-bg-card px-5 py-3.5 font-mono text-sm text-text-primary cursor-pointer transition-all hover:border-accent hover:-translate-y-0.5"
+            >
+              <span className="text-accent">$</span>
+              <span>openjob add HomyeeKing/openjob</span>
+              <span className="text-text-tertiary text-xs font-sans">click to copy</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
+            <span className="rounded-full border border-border bg-bg-card px-3 py-1.5">GitHub source install</span>
+            <span className="rounded-full border border-border bg-bg-card px-3 py-1.5">Cron + condition aware</span>
+            <span className="rounded-full border border-border bg-bg-card px-3 py-1.5">Prompt preview included</span>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-border bg-[linear-gradient(180deg,rgba(17,17,17,0.96),rgba(10,10,10,0.98))] p-5 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]">
+          <div className="mb-4 flex items-center justify-between text-xs text-text-tertiary">
+            <span className="font-semibold uppercase tracking-[0.2em]">Trending this week</span>
+            <span>Updated daily</span>
+          </div>
+          <div className="space-y-3">
+            {jobs.slice(0, 3).map((job) => (
+              <div key={job.name} className="rounded-2xl border border-border bg-black/25 p-4">
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <div>
+                    <div className="mb-1 text-sm font-semibold text-text-primary">{job.name}</div>
+                    <div className="text-xs text-text-secondary">{job.desc}</div>
+                  </div>
+                  <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">
+                    #{job.rank}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <CronBadge cron={job.cron} label={job.cronLabel} />
+                  <TimeoutBadge>{job.timeout}min</TimeoutBadge>
+                  <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-text-secondary">{job.installs} installs</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -308,7 +336,7 @@ export default function HomePage() {
     if (currentSearch) {
       const q = currentSearch.toLowerCase();
       result = result.filter(j =>
-        j.name.includes(q) || j.desc.toLowerCase().includes(q) || j.tags.some(t => t.includes(q))
+        j.name.toLowerCase().includes(q) || j.desc.toLowerCase().includes(q) || j.tags.some(t => t.toLowerCase().includes(q))
       );
     }
     return [...result].sort((a, b) => {
