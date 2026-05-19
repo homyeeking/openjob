@@ -122,6 +122,7 @@ h1 {
 
 .job-card,
 .job-detail,
+.machine-panel,
 .empty {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -235,6 +236,85 @@ h1 {
 
 .job-card .pill {
   min-width: 72px;
+}
+
+.machine-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px 18px;
+}
+
+.machine-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.machine-panel-text {
+  min-width: 0;
+}
+
+.machine-panel-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.machine-panel-copy {
+  margin-top: 6px;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.switch.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 48px;
+  height: 28px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #2a313c;
+  border: 1px solid var(--line);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.switch-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--text);
+  transition: transform 0.18s ease;
+}
+
+.switch input:checked + .switch-track {
+  background: color-mix(in srgb, var(--green) 55%, #1c222b);
+  border-color: color-mix(in srgb, var(--green) 50%, var(--line));
+}
+
+.switch input:checked + .switch-track .switch-thumb {
+  transform: translateX(20px);
+}
+
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid color-mix(in srgb, var(--blue) 80%, white);
+  outline-offset: 2px;
 }
 
 .detail-page {
@@ -466,5 +546,9 @@ pre {
   .job-grid,
   .job-cards {
     grid-template-columns: 1fr;
+  }
+
+  .machine-panel-row {
+    align-items: flex-start;
   }
 }

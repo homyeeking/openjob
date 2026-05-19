@@ -2,10 +2,12 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ChildProcess } from 'child_process';
 import { resolveAgentsDir } from '../src/registry';
 import { parseSource } from '../src/source';
 import { installerInternals } from '../src/installer';
+import { disableKeepAwake, enableKeepAwake, keepAwakeInternals, readKeepAwakeState } from '../src/keepAwake';
 
 const tempDirs: string[] = [];
 
@@ -41,6 +43,8 @@ function createTempDir(): string {
 }
 
 afterEach(() => {
+  keepAwakeInternals.resetForTests();
+  vi.restoreAllMocks();
   while (tempDirs.length > 0) {
     const dir = tempDirs.pop();
     if (dir) fs.rmSync(dir, { recursive: true, force: true });
@@ -102,6 +106,70 @@ describe('registry paths', () => {
   it('resolves global agents dir from os homedir when HOME is missing', () => {
     expect(resolveAgentsDir({} as NodeJS.ProcessEnv, () => '/tmp/openjob-global-home'))
       .toBe('/tmp/openjob-global-home/.agents');
+  });
+});
+
+describe('keep awake', () => {
+  it('enables and disables keep-awake state with a tracked pid', () => {
+    const dir = createTempDir();
+    keepAwakeInternals.setStatePathForTests(path.join(dir, 'keep-awake.json'));
+    keepAwakeInternals.setPlatformForTests('darwin');
+    keepAwakeInternals.setPmsetExistsForTests(true);
+    keepAwakeInternals.setNowIsoForTests('2026-05-19T07:20:00.000Z');
+    keepAwakeInternals.setSpawnNoIdleForTests(() => ({ pid: 4321, unref: vi.fn() } as unknown as ChildProcess));
+    keepAwakeInternals.setProcessExistsForTests((pid) => pid === 4321);
+    keepAwakeInternals.setKillProcessForTests(() => {});
+
+    expect(readKeepAwakeState()).toEqual({
+      enabled: false,
+      pid: null,
+      startedAt: null,
+      lastError: null,
+    });
+
+    expect(enableKeepAwake()).toEqual({
+      enabled: true,
+      pid: 4321,
+      startedAt: '2026-05-19T07:20:00.000Z',
+      lastError: null,
+    });
+
+    expect(disableKeepAwake()).toEqual({
+      enabled: false,
+      pid: null,
+      startedAt: null,
+      lastError: null,
+    });
+  });
+
+  it('clears stale keep-awake state and preserves a useful error', () => {
+    const dir = createTempDir();
+    keepAwakeInternals.setStatePathForTests(path.join(dir, 'keep-awake.json'));
+    keepAwakeInternals.writeKeepAwakeState({
+      enabled: true,
+      pid: 9999,
+      startedAt: '2026-05-19T07:20:00.000Z',
+      lastError: null,
+    });
+    keepAwakeInternals.setProcessExistsForTests(() => false);
+
+    expect(readKeepAwakeState()).toEqual({
+      enabled: false,
+      pid: null,
+      startedAt: null,
+      lastError: 'keep-awake process is no longer running',
+    });
+  });
+
+  it('rejects keep-awake when pmset exits before the process becomes observable', () => {
+    const dir = createTempDir();
+    keepAwakeInternals.setStatePathForTests(path.join(dir, 'keep-awake.json'));
+    keepAwakeInternals.setPlatformForTests('darwin');
+    keepAwakeInternals.setPmsetExistsForTests(true);
+    keepAwakeInternals.setSpawnNoIdleForTests(() => ({ pid: 5555, unref: vi.fn() } as unknown as ChildProcess));
+    keepAwakeInternals.setProcessExistsForTests(() => false);
+
+    expect(() => enableKeepAwake()).toThrow(/exited before keep-awake was enabled/);
   });
 });
 

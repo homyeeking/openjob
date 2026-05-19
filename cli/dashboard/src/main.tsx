@@ -5,6 +5,7 @@ import './styles.css';
 type DaemonStatus = 'running' | 'starting' | 'degraded' | 'stopped' | string;
 type JobStatus = 'success' | 'failed' | 'running' | 'missed' | 'skipped' | 'idle' | string;
 type JobAction = 'run' | 'enable' | 'disable';
+type BusyAction = `${string}:${JobAction}` | 'keep-awake:enable' | 'keep-awake:disable';
 
 type RunRecord = {
   status: JobStatus;
@@ -43,6 +44,12 @@ type OverviewResponse = {
   };
   jobs: JobSummary[];
   machineId: string;
+  keepAwake: {
+    enabled: boolean;
+    pid?: number | null;
+    startedAt?: string | null;
+    lastError?: string | null;
+  };
 };
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -104,7 +111,7 @@ function App() {
   const [overview, setOverview] = useState<OverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyJob, setBusyJob] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<BusyAction | null>(null);
   const [selectedJobName, setSelectedJobName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DetailTab>('detail');
 
@@ -122,7 +129,7 @@ function App() {
   }
 
   async function runAction(job: JobSummary, action: JobAction) {
-    setBusyJob(`${job.name}:${action}`);
+    setBusyAction(`${job.name}:${action}`);
     try {
       const response = await fetch(`/api/jobs/${encodeURIComponent(job.name)}/${action}`, {
         method: 'POST',
@@ -132,7 +139,26 @@ function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusyJob(null);
+      setBusyAction(null);
+    }
+  }
+
+  async function toggleKeepAwake(enabled: boolean) {
+    const action = enabled ? 'disable' : 'enable';
+    setBusyAction(`keep-awake:${action}`);
+    try {
+      const response = await fetch(`/api/keep-awake/${action}`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(payload?.error || `${action} keep-awake failed: ${response.status}`);
+      }
+      await loadOverview();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusyAction(null);
     }
   }
 
@@ -161,12 +187,36 @@ function App() {
           <h1 className="brand-title">OPENJOB DASHBOARD</h1>
           <p className="subtle">查看本机任务状态、执行历史、失败原因和 daemon 心跳。</p>
         </div>
-        <button className="primary" onClick={loadOverview} disabled={loading}>
+        <button className="primary" onClick={loadOverview} disabled={loading || busyAction !== null}>
           {loading ? '刷新中' : '刷新'}
         </button>
       </header>
 
       {error && <div className="alert">{error}</div>}
+
+      {!selectedJob && overview && (
+        <section className="machine-panel" aria-label="机器状态控制">
+          <div className="machine-panel-row">
+            <div className="machine-panel-text">
+              <p className="detail-kicker">机器状态</p>
+              <h2 className="machine-panel-title">保持电脑运行</h2>
+            </div>
+            <label className={`switch ${busyAction !== null ? 'disabled' : ''}`}>
+              <input
+                type="checkbox"
+                checked={overview.keepAwake.enabled}
+                onChange={() => toggleKeepAwake(overview.keepAwake.enabled)}
+                disabled={busyAction !== null}
+                aria-label="切换保持电脑运行"
+              />
+              <span className="switch-track" aria-hidden="true">
+                <span className="switch-thumb" />
+              </span>
+            </label>
+          </div>
+          {overview.keepAwake.lastError && <div className="message-line error">{overview.keepAwake.lastError}</div>}
+        </section>
+      )}
 
       {!selectedJob && (
         <section className="job-cards" aria-label="任务状态">
@@ -191,7 +241,7 @@ function App() {
         <section className="detail-page">
           <JobDetail
             job={selectedJob}
-            busyJob={busyJob}
+            busyJob={busyAction}
             onAction={runAction}
             activeTab={activeTab}
             onTabChange={setActiveTab}

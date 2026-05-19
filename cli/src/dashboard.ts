@@ -11,6 +11,7 @@ import {
 } from './state';
 import { getJob, enableJob, disableJob } from './registry';
 import { executeJob } from './executor';
+import { disableKeepAwake, enableKeepAwake, readKeepAwakeState } from './keepAwake';
 import { OverviewResponse, RunRecord, JobSummary } from './types';
 
 const DASHBOARD_DIST_DIR = path.resolve(__dirname, '../dashboard/dist');
@@ -101,17 +102,36 @@ export function createServer(port = 0, autoOpen = true): http.Server {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
 
     if (req.method === 'GET' && url.pathname === '/api/overview') {
-      const jobs: JobSummary[] = summarizeJobs().map((job: JobSummary) => ({ 
-        ...job, 
-        history: readRunLog(job.name, 5) 
+      const jobs: JobSummary[] = summarizeJobs().map((job: JobSummary) => ({
+        ...job,
+        history: readRunLog(job.name, 5)
       }));
-      const response: OverviewResponse = { 
-        daemon: readDaemonState(), 
-        jobs, 
-        machineId: MACHINE_ID 
+      const response: OverviewResponse = {
+        daemon: readDaemonState(),
+        jobs,
+        machineId: MACHINE_ID,
+        keepAwake: readKeepAwakeState(),
       };
       json(res, 200, response);
       return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/keep-awake/enable') {
+      try {
+        return json(res, 200, enableKeepAwake());
+      } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        return json(res, 500, { error: errorMsg });
+      }
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/keep-awake/disable') {
+      try {
+        return json(res, 200, disableKeepAwake());
+      } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        return json(res, 500, { error: errorMsg });
+      }
     }
 
     const match = url.pathname.match(/\/api\/jobs\/([^/]+)\/(run|enable|disable)$/);

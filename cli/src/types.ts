@@ -113,11 +113,19 @@ export interface ConditionCheck {
   script?: string;
 }
 
+export interface KeepAwakeState {
+  enabled: boolean;
+  pid: number | null;
+  startedAt: string | null;
+  lastError: string | null;
+}
+
 /** Dashboard API 响应 */
 export interface OverviewResponse {
   daemon: DaemonState;
   jobs: JobSummary[];
   machineId: string;
+  keepAwake: KeepAwakeState;
 }
 
 /** 任务摘要（用于列表展示） */
