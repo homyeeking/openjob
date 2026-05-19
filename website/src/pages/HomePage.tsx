@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { jobs, agents, parseInstalls } from '../data/jobs';
 import type { Job } from '../data/jobs';
 import JobCard from '../components/JobCard';
@@ -10,7 +11,7 @@ import Toast, { useToast } from '../components/Toast';
 
 function Hero() {
   const handleCopy = () => {
-    navigator.clipboard.writeText('openjob add HomyeeKing/openjob');
+    navigator.clipboard.writeText('npx openjob@latest add HomyeeKing/openjob');
   };
 
   return (
@@ -36,7 +37,7 @@ function Hero() {
               className="inline-flex items-center gap-3 rounded-xl border border-border bg-bg-card px-5 py-3.5 font-mono text-sm text-text-primary cursor-pointer transition-all hover:border-accent hover:-translate-y-0.5"
             >
               <span className="text-accent">$</span>
-              <span>openjob add HomyeeKing/openjob</span>
+              <span>npx openjob@latest add HomyeeKing/openjob</span>
               <span className="text-text-tertiary text-xs font-sans">click to copy</span>
             </div>
           </div>
@@ -309,12 +310,22 @@ function CTA() {
 }
 
 export default function HomePage() {
+  const location = useLocation();
   const [currentFilter, setCurrentFilter] = useState('all');
   const [currentSearch, setCurrentSearch] = useState('');
   const [currentSort, setCurrentSort] = useState('rank');
   const [modalJob, setModalJob] = useState<Job | null>(null);
   const { toast, showToast, hideToast } = useToast();
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (location.pathname !== '/leaderboard') return;
+    const node = document.getElementById('leaderboard');
+    if (!node) return;
+    requestAnimationFrame(() => {
+      node.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
+  }, [location.pathname]);
 
   // Keyboard shortcut "/" to focus search
   useEffect(() => {

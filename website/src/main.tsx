@@ -12,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/leaderboard" element={<HomePage />} />
           <Route path="/job/:name" element={<JobDetailPage />} />
         </Route>
       </Routes>
