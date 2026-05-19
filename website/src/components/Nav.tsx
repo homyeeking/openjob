@@ -7,9 +7,9 @@ export default function Nav() {
         JOBS
       </Link>
       <div className="flex gap-7">
-        <a href="#leaderboard" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">Browse</a>
-        <a href="#how-it-works" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">How It Works</a>
-        <a href="#spec" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">Spec</a>
+        <Link to="/leaderboard" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">Browse</Link>
+        <Link to="/how-it-works" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">How It Works</Link>
+        <Link to="/spec" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">Spec</Link>
         <a href="https://github.com/HomyeeKing/openjob" target="_blank" rel="noopener noreferrer" className="text-text-secondary text-sm font-medium transition-colors hover:text-text-primary hover:no-underline">GitHub</a>
       </div>
     </nav>

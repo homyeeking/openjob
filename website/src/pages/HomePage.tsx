@@ -319,8 +319,14 @@ export default function HomePage() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (location.pathname !== '/leaderboard') return;
-    const node = document.getElementById('leaderboard');
+    const sectionIdByPath: Record<string, string> = {
+      '/leaderboard': 'leaderboard',
+      '/how-it-works': 'how-it-works',
+      '/spec': 'spec',
+    };
+    const sectionId = sectionIdByPath[location.pathname];
+    if (!sectionId) return;
+    const node = document.getElementById(sectionId);
     if (!node) return;
     requestAnimationFrame(() => {
       node.scrollIntoView({ behavior: 'auto', block: 'start' });

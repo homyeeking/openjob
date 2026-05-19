@@ -13,6 +13,8 @@ createRoot(document.getElementById('root')!).render(
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/leaderboard" element={<HomePage />} />
+          <Route path="/how-it-works" element={<HomePage />} />
+          <Route path="/spec" element={<HomePage />} />
           <Route path="/job/:name" element={<JobDetailPage />} />
         </Route>
       </Routes>
