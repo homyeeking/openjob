@@ -7,7 +7,7 @@ const { initRegistry, addJob, removeJob, enableJob, disableJob, getJob, listJobs
 const { syncToClaude } = require('../lib/sync');
 const { ensureRegistryState, summarizeJobs, readDaemonState, readRunLog } = require('../lib/state');
 const { executeJob } = require('../lib/executor');
-const { startDaemon, stopDaemon, runLoop, isProcessAlive } = require('../lib/daemon');
+const { startDaemon, stopDaemon, runLoop, isDaemonAlive } = require('../lib/daemon');
 const { createServer } = require('../lib/dashboard');
 
 const C = {
@@ -234,11 +234,13 @@ async function main() {
       }
       if (action === 'status') {
         const state = readDaemonState();
-        const alive = state.pid ? isProcessAlive(state.pid) : false;
+        const alive = isDaemonAlive(state);
+        const statusColor = state.status === 'running' || state.status === 'starting' ? C.green : state.status === 'degraded' ? C.yellow : C.red;
+        const aliveColor = alive ? C.green : C.red;
         console.log(`${C.bold}Daemon Status${C.reset}`);
-        console.log(`status: ${state.status}`);
+        console.log(`status: ${statusColor}${state.status}${C.reset}`);
         console.log(`pid: ${state.pid || '-'}`);
-        console.log(`alive: ${alive ? 'yes' : 'no'}`);
+        console.log(`alive: ${aliveColor}${alive ? 'yes' : 'no'}${C.reset}`);
         console.log(`startedAt: ${state.startedAt || '-'}`);
         console.log(`heartbeatAt: ${state.heartbeatAt || '-'}`);
         break;

@@ -25,6 +25,16 @@ export function isProcessAlive(pid: number | null | undefined): boolean {
   }
 }
 
+export function isDaemonAlive(state: DaemonState): boolean {
+  if (!state.pid) return false;
+  if (isProcessAlive(state.pid)) return true;
+  if (state.heartbeatAt) {
+    const elapsed = Date.now() - new Date(state.heartbeatAt).getTime();
+    return elapsed >= 0 && elapsed < 60_000;
+  }
+  return false;
+}
+
 export function dueJobs(current: Date = new Date()): Job[] {
   const registry = ensureRegistryState();
   return registry.jobs.filter(job => {
@@ -123,7 +133,7 @@ export function startDaemon(): DaemonState {
     return state;
   }
 
-  const entry = path.join(__dirname, '..', 'bin', 'jobs');
+  const entry = path.join(__dirname, '..', 'bin', 'openjob');
   const child = spawn(process.execPath, [entry, 'daemon', 'run'], {
     detached: true,
     stdio: 'ignore',
