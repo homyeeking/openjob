@@ -272,8 +272,30 @@ async function main() {
 
     case 'dashboard': {
       ensureRegistryState();
-      const port = args[1] ? Number(args[1]) : 0;
-      createServer(Number.isFinite(port) ? port : 0, true);
+      const state = readDaemonState();
+
+      if (isDaemonAlive(state) && state.dashboardUrl) {
+        console.log(`${C.green}Dashboard${C.reset} ${state.dashboardUrl}`);
+        try {
+          require('child_process').execFileSync('/usr/bin/open', [state.dashboardUrl], { stdio: 'ignore' });
+        } catch {}
+        break;
+      }
+
+      console.log(`${C.yellow}Daemon not running, starting...${C.reset}`);
+      startDaemon();
+
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        const s = readDaemonState();
+        if (s.dashboardUrl) {
+          console.log(`${C.green}Dashboard${C.reset} ${s.dashboardUrl}`);
+          try {
+            require('child_process').execFileSync('/usr/bin/open', [s.dashboardUrl], { stdio: 'ignore' });
+          } catch {}
+          break;
+        }
+      }
       break;
     }
 
