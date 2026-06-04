@@ -86,6 +86,7 @@ export interface DaemonState {
   heartbeatAt: string | null;
   lastWakeGapMs: number;
   lastError?: string;
+  dashboardUrl?: string;
 }
 
 /** 任务运行时配置 */

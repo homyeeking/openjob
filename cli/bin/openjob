@@ -51,6 +51,19 @@ ${C.bold}COMMANDS${C.reset}
 `);
 }
 
+function formatRelativeTime(iso) {
+  if (!iso) return '-';
+  const diff = Date.now() - new Date(iso).getTime();
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 function formatTable(jobs) {
   if (jobs.length === 0) {
     console.log(`  ${C.dim}No jobs registered.${C.reset}`);
@@ -60,8 +73,9 @@ function formatTable(jobs) {
   const nameWidth = Math.max(4, ...jobs.map(j => j.name.length));
   const cronWidth = Math.max(4, ...jobs.map(j => j.cron.length));
   const statusWidth = 6;
+  const lastRunWidth = 10;
 
-  const header = `${'NAME'.padEnd(nameWidth)}  ${'CRON'.padEnd(cronWidth)}  ${'STATUS'.padEnd(statusWidth)}  DESCRIPTION`;
+  const header = `${'NAME'.padEnd(nameWidth)}  ${'CRON'.padEnd(cronWidth)}  ${'STATUS'.padEnd(statusWidth)}  ${'LAST RUN'.padEnd(lastRunWidth)}  DESCRIPTION`;
   const divider = '-'.repeat(header.length);
 
   console.log(`  ${C.bold}${header}${C.reset}`);
@@ -70,7 +84,9 @@ function formatTable(jobs) {
   for (const job of jobs) {
     const statusColor = job.enabled ? C.green : C.red;
     const status = job.enabled ? 'on' : 'off';
-    console.log(`  ${job.name.padEnd(nameWidth)}  ${job.cron.padEnd(cronWidth)}  ${statusColor}${status.padEnd(statusWidth + C.green.length + C.reset.length - statusColor.length - C.reset.length)}${C.reset}  ${job.description}`);
+    const lastRun = formatRelativeTime(job.lastRun);
+    const statusPadding = statusWidth + C.green.length + C.reset.length - statusColor.length - C.reset.length;
+    console.log(`  ${job.name.padEnd(nameWidth)}  ${job.cron.padEnd(cronWidth)}  ${statusColor}${status.padEnd(statusPadding)}${C.reset}  ${C.dim}${lastRun.padEnd(lastRunWidth)}${C.reset}  ${job.description}`);
   }
 }
 
@@ -243,6 +259,7 @@ async function main() {
         console.log(`alive: ${aliveColor}${alive ? 'yes' : 'no'}${C.reset}`);
         console.log(`startedAt: ${state.startedAt || '-'}`);
         console.log(`heartbeatAt: ${state.heartbeatAt || '-'}`);
+        if (state.dashboardUrl) console.log(`dashboard: ${C.cyan}${state.dashboardUrl}${C.reset}`);
         break;
       }
       if (action === 'run') {

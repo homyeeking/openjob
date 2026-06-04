@@ -10,6 +10,7 @@ import {
   MACHINE_ID 
 } from './state';
 import { executeJob } from './executor';
+import { createServer } from './dashboard';
 import { Job, DaemonState } from './types';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
@@ -106,6 +107,8 @@ export async function tick(): Promise<void> {
   }
 }
 
+const DASHBOARD_PORT = Number(process.env.OPENJOB_DASHBOARD_PORT) || 17852;
+
 export async function runLoop(): Promise<void> {
   ensureRegistryState();
   writeDaemonState({ status: 'running', pid: process.pid, machineId: MACHINE_ID, startedAt: new Date().toISOString(), heartbeatAt: new Date().toISOString() });
@@ -117,6 +120,25 @@ export async function runLoop(): Promise<void> {
 
   process.on('SIGINT', handleStop);
   process.on('SIGTERM', handleStop);
+
+  const server = createServer(DASHBOARD_PORT, false);
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      const fallback = createServer(0, false);
+      fallback.on('listening', () => {
+        const addr = fallback.address();
+        if (addr && typeof addr !== 'string') {
+          writeDaemonState({ dashboardUrl: `http://127.0.0.1:${addr.port}` });
+        }
+      });
+    }
+  });
+  server.on('listening', () => {
+    const addr = server.address();
+    if (addr && typeof addr !== 'string') {
+      writeDaemonState({ dashboardUrl: `http://127.0.0.1:${addr.port}` });
+    }
+  });
 
   await tick();
   setInterval(() => {
