@@ -1,17 +1,18 @@
 import * as path from 'path';
 import { CronExpressionParser } from 'cron-parser';
 import { spawn } from 'child_process';
-import { 
-  ensureRegistryState, 
-  readDaemonState, 
-  writeDaemonState, 
-  updateJob, 
-  safeNextRun, 
-  MACHINE_ID 
+import {
+  appendRunLog,
+  ensureRegistryState,
+  readDaemonState,
+  writeDaemonState,
+  updateJob,
+  safeNextRun,
+  MACHINE_ID
 } from './state';
 import { executeJob } from './executor';
 import { createServer } from './dashboard';
-import { Job, DaemonState } from './types';
+import { Job, DaemonState, RunRecord } from './types';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const SLEEP_GAP_THRESHOLD_MS = 90_000;
@@ -65,13 +66,32 @@ export function collectMissedJobs(lastHeartbeat: Date, current: Date): Job[] {
 
 export async function markSleepMissedJobs(lastHeartbeat: Date, current: Date): Promise<number> {
   const jobs = collectMissedJobs(lastHeartbeat, current);
+  const startedAt = lastHeartbeat.toISOString();
+  const finishedAt = current.toISOString();
+
   for (const job of jobs) {
+    const record: RunRecord = {
+      jobName: job.name,
+      trigger: 'scheduled',
+      startedAt,
+      finishedAt,
+      status: 'missed',
+      exitReason: 'sleep_missed',
+      stdout: '',
+      stderr: 'device_sleep_suspected'
+    };
+
+    appendRunLog(job.name, record);
     updateJob(job.name, currentJob => ({
       ...currentJob,
+      lastRun: finishedAt,
+      lastStartedAt: startedAt,
+      lastFinishedAt: finishedAt,
       lastStatus: 'missed',
       lastError: 'device_sleep_suspected',
       lastExitReason: 'sleep_missed',
-      nextRun: safeNextRun(currentJob.cron, current)
+      nextRun: safeNextRun(currentJob.cron, current),
+      history: [...(currentJob.history || []), record].slice(-20)
     }));
   }
   return jobs.length;

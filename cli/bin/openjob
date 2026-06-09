@@ -42,6 +42,7 @@ ${C.bold}COMMANDS${C.reset}
   ${C.cyan}disable${C.reset} <name>      Disable a job
   ${C.cyan}daemon start${C.reset}        Start local jobs daemon
   ${C.cyan}daemon stop${C.reset}         Stop local jobs daemon
+  ${C.cyan}daemon restart${C.reset}      Restart local jobs daemon
   ${C.cyan}daemon status${C.reset}       Show daemon status
   ${C.cyan}dashboard${C.reset}           Open local web dashboard
   ${C.cyan}sync${C.reset}                Sync enabled jobs to Claude scheduled_tasks.json
@@ -266,7 +267,14 @@ async function main() {
         await runLoop();
         break;
       }
-      console.error(`${C.red}Error:${C.reset} Usage: ${CLI_NAME} daemon <start|stop|status>`);
+      if (action === 'restart') {
+        stopDaemon();
+        await new Promise(r => setTimeout(r, 500));
+        const state = startDaemon();
+        console.log(`${C.green}Daemon restarted${C.reset} (pid: ${state.pid || '-'})`);
+        break;
+      }
+      console.error(`${C.red}Error:${C.reset} Usage: ${CLI_NAME} daemon <start|stop|restart|status>`);
       process.exit(1);
     }
 

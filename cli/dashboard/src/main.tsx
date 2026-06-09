@@ -214,7 +214,12 @@ function App() {
               </span>
             </label>
           </div>
-          {overview.keepAwake.lastError && <div className="message-line error">{overview.keepAwake.lastError}</div>}
+          {overview.keepAwake.lastError && (
+            <div className="message-line keep-awake">
+              <strong>提示：</strong>
+              {overview.keepAwake.lastError}
+            </div>
+          )}
         </section>
       )}
 
@@ -304,6 +309,12 @@ function JobDetail({
   const message = jobMessage(job);
   const latestRecord = getLatestRecord(job);
   const history = [...(job.history || [])].reverse();
+  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState(0);
+  const selectedRecord = history[selectedHistoryIndex] || history[0];
+
+  useEffect(() => {
+    setSelectedHistoryIndex(0);
+  }, [job.name, activeTab, history.length]);
 
   return (
     <article className="job-detail">
@@ -366,33 +377,60 @@ function JobDetail({
       )}
 
       {activeTab === 'history' && (
-        <div className="history-table-wrap">
-          <table className="history-table">
-            <thead>
-              <tr>
-                <th>运行时间</th>
-                <th>运行状态</th>
-                <th>结束时间</th>
-                <th>退出原因</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((record, index) => (
-                <tr key={`${record.startedAt || 'run'}-${index}`}>
-                  <td>{formatDateTime(record.startedAt || record.finishedAt)}</td>
-                  <td><span className={`pill ${statusClass(record.status)}`}>{record.status || 'idle'}</span></td>
-                  <td>{formatDateTime(record.finishedAt)}</td>
-                  <td>{record.exitReason || '-'}</td>
-                </tr>
-              ))}
-              {history.length === 0 && (
+        <>
+          <div className="history-table-wrap">
+            <table className="history-table">
+              <thead>
                 <tr>
-                  <td colSpan={4}>暂无运行历史</td>
+                  <th>运行时间</th>
+                  <th>运行状态</th>
+                  <th>结束时间</th>
+                  <th>退出原因</th>
+                  <th>原因详情</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {history.map((record, index) => {
+                  const isSelected = selectedRecord === record;
+                  return (
+                    <tr
+                      key={`${record.startedAt || 'run'}-${index}`}
+                      className={isSelected ? 'selected' : ''}
+                    >
+                      <td>{formatDateTime(record.startedAt || record.finishedAt)}</td>
+                      <td><span className={`pill ${statusClass(record.status)}`}>{record.status || 'idle'}</span></td>
+                      <td>{formatDateTime(record.finishedAt)}</td>
+                      <td>{record.exitReason || '-'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="history-reason-button"
+                          onClick={() => setSelectedHistoryIndex(index)}
+                        >
+                          {isSelected ? '已查看' : '查看原因'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {history.length === 0 && (
+                  <tr>
+                    <td colSpan={5}>暂无运行历史</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {selectedRecord && (
+            <div className="history-detail">
+              <div className="history-detail-head">
+                <span>原因详情</span>
+                <span className={`pill ${statusClass(selectedRecord.status)}`}>{selectedRecord.status || 'idle'}</span>
+              </div>
+              <pre>{runLogText(selectedRecord)}</pre>
+            </div>
+          )}
+        </>
       )}
     </article>
   );

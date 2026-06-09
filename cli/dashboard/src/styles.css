@@ -432,6 +432,12 @@ h1 {
   border: 1px solid color-mix(in srgb, var(--red) 42%, var(--line));
 }
 
+.message-line.keep-awake {
+  color: #ffeec2;
+  background: color-mix(in srgb, var(--yellow) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--yellow) 50%, var(--line));
+}
+
 .message-line.success {
   color: #d9ffea;
   background: color-mix(in srgb, var(--green) 14%, transparent);
@@ -503,6 +509,29 @@ pre {
 
 .history-table tr:last-child td {
   border-bottom: 0;
+}
+
+.history-table tr.selected {
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+
+.history-reason-button {
+  min-height: 28px;
+  padding: 0 10px;
+  background: #12151a;
+}
+
+.history-detail {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.history-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .empty {

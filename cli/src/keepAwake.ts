@@ -63,14 +63,19 @@ function readStoredState(): KeepAwakeState {
 
 export function readKeepAwakeState(): KeepAwakeState {
   const state = readStoredState();
-  if (!state.enabled) return state;
+  if (!state.enabled) {
+    if (state.lastError) {
+      return writeKeepAwakeState({ enabled: false, pid: null, startedAt: null, lastError: null });
+    }
+    return state;
+  }
   if (keepAwakeDeps.processExists(state.pid)) return state;
 
   return writeKeepAwakeState({
     enabled: false,
     pid: null,
     startedAt: null,
-    lastError: 'keep-awake process is no longer running',
+    lastError: '防休眠进程已退出，点击上方开关可重新启用',
   });
 }
 
